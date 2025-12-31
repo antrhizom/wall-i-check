@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './firebase';
-import { collection, doc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
@@ -54,6 +54,8 @@ const formatDate = (date) => new Date(date).toLocaleDateString('de-CH', { weekda
 const formatDateShort = (date) => new Date(date).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
 const formatMonth = (date) => new Date(date).toLocaleDateString('de-CH', { month: 'long', year: 'numeric' });
 const getMonthKey = (date) => { const d = new Date(date); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
+// Generiert strukturierte Email für Lernende (Code wird Document ID)
+const getLernendEmail = (code) => `lernend-${code.toLowerCase()}@maurercheck.local`;
 
 // ============================================================================
 // UI KOMPONENTEN
@@ -927,21 +929,102 @@ const LoginScreen = ({ onLogin }) => {
   };
   
   const handleLernendLogin = async () => {
-    setError(''); setLoading(true);
+    setError(''); 
+    setLoading(true);
+    
     try {
-      const bbSnapshot = await getDocs(collection(db, 'berufsbildner'));
-      let foundBB = null;
-      bbSnapshot.forEach(doc => { const data = doc.data(); if (data.codes?.includes(code.toUpperCase())) foundBB = { id: doc.id, ...data }; });
-      if (foundBB) {
-        const lernSnapshot = await getDocs(query(collection(db, 'lernende'), where('code', '==', code.toUpperCase())));
+      const codeUpper = code.toUpperCase();
+      
+      // 1. Versuche NEUE Struktur (Code = Document ID)
+      let lernendDoc = await getDoc(doc(db, 'lernende', codeUpper));
+      let lernendId = codeUpper;
+      let lernendData = null;
+      
+      if (lernendDoc.exists()) {
+        // ✅ Neue Struktur gefunden!
+        lernendData = lernendDoc.data();
+        console.log('✅ Lernender gefunden (neue Struktur)');
+      } else {
+        // 2. Fallback: ALTE Struktur (Query mit where)
+        console.log('⚠️ Neue Struktur nicht gefunden, versuche alte...');
+        const lernQuery = query(collection(db, 'lernende'), where('code', '==', codeUpper));
+        const lernSnapshot = await getDocs(lernQuery);
+        
         if (!lernSnapshot.empty) {
-          onLogin({ type: 'lernend', user: { id: lernSnapshot.docs[0].id, ...lernSnapshot.docs[0].data() } });
+          // ✅ Alte Struktur gefunden!
+          lernendDoc = lernSnapshot.docs[0];
+          lernendId = lernendDoc.id;
+          lernendData = lernendDoc.data();
+          console.log('✅ Lernender gefunden (alte Struktur)');
         } else {
-          setError('Dieser Code wurde noch nicht aktiviert. Bitte wende dich an deine/n Berufsbildner/in.');
+          setError('Ungültiger Code oder noch nicht aktiviert.');
+          setLoading(false);
+          return;
         }
-      } else setError('Ungültiger Code');
-    } catch { setError('Verbindungsfehler.'); }
-    finally { setLoading(false); }
+      }
+      
+      const lernendEmail = lernendData.email || getLernendEmail(codeUpper);
+      const lernendPassword = codeUpper; // Code = Passwort
+      
+      // 3. Prüfe ob Auth-Account bereits existiert
+      if (!lernendData.authCreated) {
+        // Erster Login - erstelle Auth-Account
+        try {
+          await createUserWithEmailAndPassword(auth, lernendEmail, lernendPassword);
+          console.log('✅ Auth-Account erstellt:', lernendEmail);
+          
+          // Markiere als erstellt (in BEIDEN Strukturen)
+          await updateDoc(doc(db, 'lernende', lernendId), { 
+            authCreated: true,
+            email: lernendEmail // Falls noch nicht vorhanden
+          });
+        } catch (authError) {
+          if (authError.code === 'auth/email-already-in-use') {
+            console.log('Account existiert bereits, markiere als erstellt');
+            await updateDoc(doc(db, 'lernende', lernendId), { 
+              authCreated: true,
+              email: lernendEmail
+            });
+          } else {
+            console.error('Fehler beim Erstellen des Auth-Accounts:', authError);
+            setError('Fehler beim Erstellen des Accounts: ' + authError.message);
+            setLoading(false);
+            return;
+          }
+        }
+      }
+      
+      // 4. Firebase Auth Login
+      try {
+        await signInWithEmailAndPassword(auth, lernendEmail, lernendPassword);
+      } catch (loginError) {
+        console.error('Login-Fehler:', loginError);
+        if (loginError.code === 'auth/wrong-password' || loginError.code === 'auth/invalid-credential') {
+          setError('Falscher Code');
+        } else if (loginError.code === 'auth/user-not-found') {
+          setError('Account nicht gefunden. Bitte kontaktiere deine/n Berufsbildner/in.');
+        } else {
+          setError('Anmeldung fehlgeschlagen: ' + loginError.message);
+        }
+        setLoading(false);
+        return;
+      }
+      
+      // 5. Erfolgreicher Login - hole aktuelle Daten
+      const finalDoc = await getDoc(doc(db, 'lernende', lernendId));
+      if (finalDoc.exists()) {
+        onLogin({ 
+          type: 'lernend', 
+          user: { id: lernendId, ...finalDoc.data() } 
+        });
+      }
+      
+    } catch (err) {
+      console.error('Unerwarteter Fehler:', err);
+      setError('Verbindungsfehler. Bitte versuche es erneut.');
+    } finally {
+      setLoading(false);
+    }
   };
   
   return (
@@ -1008,7 +1091,7 @@ const LernendenNav = ({ currentView, onNavigate, onLogout, userName }) => (
         <span className="text-2xl">🏗️</span>
         <span className="font-semibold text-stone-100 hidden sm:block">MauerwerkCheck</span>
         <div className="flex gap-1">
-          {[{ id: 'rapport', icon: '📝' }, { id: 'dashboard', icon: '📊' }, { id: 'statistik', icon: '📈' }, { id: 'verlauf', icon: '📅' }].map(item => (
+          {[{ id: 'rapport', icon: '📝' }, { id: 'dashboard', icon: '📊' }, { id: 'statistik', icon: '📈' }, { id: 'verlauf', icon: '📅' }, { id: 'notizen', icon: '📋' }].map(item => (
             <button key={item.id} onClick={() => onNavigate(item.id)} className={`px-3 py-2 rounded-lg transition-all ${currentView === item.id ? 'bg-amber-500/20 text-amber-400' : 'text-stone-400 hover:text-stone-100'}`}>
               {item.icon}
             </button>
@@ -1075,7 +1158,16 @@ const RapportForm = ({ lernender, rapporte, onSave }) => {
   const saveRapport = async () => {
     setSaving(true);
     try {
-      const rapportData = { lernenderId: lernender.id, datum: selectedDatum, arbeiten: selectedArbeiten, kompetenzen: selectedKompetenzen, notizen, berufsbildnerBewertungen: vorhandenRapport?.berufsbildnerBewertungen || [], kommentare: vorhandenRapport?.kommentare || [] };
+      const rapportData = { 
+        lernenderId: lernender.id, // Das ist jetzt der Code!
+        lernenderCode: lernender.code, // Explizit auch den Code speichern
+        datum: selectedDatum, 
+        arbeiten: selectedArbeiten, 
+        kompetenzen: selectedKompetenzen, 
+        notizen, 
+        berufsbildnerBewertungen: vorhandenRapport?.berufsbildnerBewertungen || [], 
+        kommentare: vorhandenRapport?.kommentare || [] 
+      };
       if (vorhandenRapport) await updateDoc(doc(db, 'rapporte', vorhandenRapport.id), rapportData);
       else await addDoc(collection(db, 'rapporte'), rapportData);
       setSaved(true); setTimeout(() => setSaved(false), 2000);
@@ -1448,6 +1540,172 @@ const LernendenVerlauf = ({ lernender, rapporte }) => {
   );
 };
 
+const LernendenNotizen = ({ lernender, rapporte }) => {
+  const [expandedNotiz, setExpandedNotiz] = useState(null);
+  
+  // Filtere nur Rapporte mit Notizen
+  const rapporteMitNotizen = rapporte
+    .filter(r => r.lernenderId === lernender.id && r.notizen && r.notizen.trim() !== '')
+    .sort((a, b) => new Date(b.datum) - new Date(a.datum));
+  
+  const handlePrint = () => {
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Meine Notizen - ${lernender.name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+          h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
+          .meta { color: #666; font-size: 14px; margin-bottom: 30px; }
+          .notiz { margin-bottom: 30px; page-break-inside: avoid; }
+          .datum { font-weight: bold; color: #444; margin-bottom: 10px; }
+          .inhalt { background: #f5f5f5; padding: 15px; border-radius: 8px; line-height: 1.6; }
+          .arbeiten { margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
+          @media print { .no-print { display: none; } }
+        </style>
+      </head>
+      <body>
+        <h1>📋 Meine Notizen</h1>
+        <div class="meta">
+          <p><strong>Name:</strong> ${lernender.name}</p>
+          <p><strong>Lehrjahr:</strong> ${lernender.lehrjahr}</p>
+          <p><strong>Anzahl Notizen:</strong> ${rapporteMitNotizen.length}</p>
+          <p><strong>Ausgedruckt:</strong> ${new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        </div>
+        ${rapporteMitNotizen.map(r => `
+          <div class="notiz">
+            <div class="datum">📅 ${formatDate(r.datum)}</div>
+            <div class="inhalt">${r.notizen}</div>
+            ${r.arbeiten && r.arbeiten.length > 0 ? `
+              <div class="arbeiten">
+                <strong>Arbeiten:</strong> ${r.arbeiten.map(a => `${ARBEITSKATEGORIEN[a.kategorie]?.icon || ''} ${a.arbeit}`).join(', ')}
+              </div>
+            ` : ''}
+          </div>
+        `).join('')}
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  };
+  
+  return (
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-stone-100">Meine Notizen</h1>
+          <p className="text-stone-400">Alle deine Notizen auf einen Blick</p>
+        </div>
+        {rapporteMitNotizen.length > 0 && (
+          <Button variant="secondary" size="small" onClick={handlePrint}>
+            🖨️ Drucken
+          </Button>
+        )}
+      </div>
+      
+      {rapporteMitNotizen.length === 0 ? (
+        <Card>
+          <p className="text-stone-400 text-center py-8">Noch keine Notizen vorhanden.</p>
+          <p className="text-stone-500 text-center text-sm">Notizen kannst du beim Erstellen eines Rapports hinzufügen.</p>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {rapporteMitNotizen.map(rapport => {
+            const isExpanded = expandedNotiz === rapport.id;
+            const arbeitsAnzahl = rapport.arbeiten?.length || 0;
+            
+            return (
+              <Card key={rapport.id} className="overflow-hidden">
+                <button
+                  onClick={() => setExpandedNotiz(isExpanded ? null : rapport.id)}
+                  className="w-full flex items-center justify-between text-left hover:bg-stone-700/20 -m-6 p-6 rounded-xl transition-colors"
+                >
+                  <div className="flex-1">
+                    <p className="text-stone-100 font-medium">{formatDate(rapport.datum)}</p>
+                    <p className="text-stone-400 text-sm mt-1">
+                      {arbeitsAnzahl} Arbeiten • {rapport.notizen.length} Zeichen
+                    </p>
+                  </div>
+                  <span className="text-stone-400 text-xl">{isExpanded ? '▼' : '▶'}</span>
+                </button>
+                
+                {isExpanded && (
+                  <div className="pt-4 mt-4 border-t border-stone-600/50">
+                    {/* Notizen */}
+                    <div className="mb-4">
+                      <p className="text-stone-400 text-sm mb-2">📝 Notiz:</p>
+                      <div className="bg-stone-800/50 p-4 rounded-lg">
+                        <p className="text-stone-200 whitespace-pre-wrap">{rapport.notizen}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Arbeiten */}
+                    {rapport.arbeiten && rapport.arbeiten.length > 0 && (
+                      <div>
+                        <p className="text-stone-400 text-sm mb-2">🏗️ Arbeiten an diesem Tag:</p>
+                        <div className="space-y-2">
+                          {rapport.arbeiten.map((a, i) => (
+                            <div key={i} className="flex items-center justify-between p-2 bg-stone-700/30 rounded-lg">
+                              <span className="text-stone-300 text-sm">
+                                {ARBEITSKATEGORIEN[a.kategorie]?.icon} {a.arbeit}
+                              </span>
+                              <RatingStars value={a.bewertung} readOnly size="small" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+      
+      {/* Statistik */}
+      {rapporteMitNotizen.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <p className="text-stone-400 text-sm">Notizen gesamt</p>
+            <p className="text-3xl font-bold text-amber-400 mt-1">{rapporteMitNotizen.length}</p>
+          </Card>
+          <Card>
+            <p className="text-stone-400 text-sm">Dieser Monat</p>
+            <p className="text-3xl font-bold text-emerald-400 mt-1">
+              {rapporteMitNotizen.filter(r => {
+                const rapportMonth = getMonthKey(r.datum);
+                const currentMonth = getMonthKey(new Date().toISOString().split('T')[0]);
+                return rapportMonth === currentMonth;
+              }).length}
+            </p>
+          </Card>
+          <Card>
+            <p className="text-stone-400 text-sm">Ø Zeichen</p>
+            <p className="text-3xl font-bold text-blue-400 mt-1">
+              {Math.round(rapporteMitNotizen.reduce((sum, r) => sum + r.notizen.length, 0) / rapporteMitNotizen.length)}
+            </p>
+          </Card>
+          <Card>
+            <p className="text-stone-400 text-sm">Letzte Notiz</p>
+            <p className="text-lg font-bold text-stone-100 mt-1">
+              {formatDateShort(rapporteMitNotizen[0].datum)}
+            </p>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const LernendenBereich = ({ lernender, rapporte, berufsbildner, monatsBewertungen, onLogout, onRefresh }) => {
   const [currentView, setCurrentView] = useState('rapport');
   return (
@@ -1457,6 +1715,7 @@ const LernendenBereich = ({ lernender, rapporte, berufsbildner, monatsBewertunge
       {currentView === 'dashboard' && <LernendenDashboard lernender={lernender} rapporte={rapporte} berufsbildner={berufsbildner} monatsBewertungen={monatsBewertungen} />}
       {currentView === 'statistik' && <StatistikView rapporte={rapporte} lernenderId={lernender.id} />}
       {currentView === 'verlauf' && <LernendenVerlauf lernender={lernender} rapporte={rapporte} />}
+      {currentView === 'notizen' && <LernendenNotizen lernender={lernender} rapporte={rapporte} />}
     </div>
   );
 };
@@ -1786,16 +2045,20 @@ const BerufsbildnerCodes = ({ berufsbildner, lernende, onRefresh }) => {
       const newLernender = {
         name: lernenderName.trim(),
         code: activatingCode,
+        email: getLernendEmail(activatingCode), // Email vormerken
+        authCreated: false, // Auth-Account noch nicht erstellt
         berufsbildnerId: berufsbildner.id,
         lehrjahr: parseInt(lehrjahr),
         startDatum: new Date().toISOString().split('T')[0]
       };
-      await addDoc(collection(db, 'lernende'), newLernender);
+      // Verwende setDoc mit Code als Document ID!
+      await setDoc(doc(db, 'lernende', activatingCode), newLernender);
       setActivatingCode(null);
       setLernenderName('');
       setLehrjahr(1);
+      alert(`Code ${activatingCode} aktiviert! Der/Die Lernende kann sich jetzt anmelden.`);
       onRefresh?.();
-    } catch (err) { console.error(err); alert('Fehler beim Aktivieren'); }
+    } catch (err) { console.error(err); alert('Fehler beim Aktivieren: ' + err.message); }
     finally { setSaving(false); }
   };
   
@@ -1909,6 +2172,7 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState(null);
+  const [expandedBB, setExpandedBB] = useState(null);
   
   const generatePassword = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
@@ -2014,22 +2278,68 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
           <h2 className="text-lg font-semibold text-stone-100 mb-4">Berufsbildner/innen ({berufsbildner.length})</h2>
           <div className="space-y-3">
             {berufsbildner.map(bb => {
-              const lernendeAnzahl = lernende.filter(l => l.berufsbildnerId === bb.id).length;
+              const meineLernende = lernende.filter(l => l.berufsbildnerId === bb.id);
+              const isExpanded = expandedBB === bb.id;
+              
               return (
-                <div key={bb.id} className="flex items-center justify-between p-4 bg-stone-700/30 rounded-xl">
-                  <div>
-                    <p className="text-stone-100 font-medium">{bb.name}</p>
-                    <p className="text-stone-400 text-sm">{bb.firma || 'Keine Firma'} • {bb.email}</p>
-                    <p className="text-stone-500 text-sm">{lernendeAnzahl} Lernende • {(bb.codes || []).length} Codes</p>
+                <div key={bb.id} className="bg-stone-700/30 rounded-xl overflow-hidden">
+                  {/* Berufsbildner Header */}
+                  <div className="flex items-center justify-between p-4">
+                    <button
+                      onClick={() => setExpandedBB(isExpanded ? null : bb.id)}
+                      className="flex-1 flex items-center gap-3 text-left hover:bg-stone-700/20 -m-4 p-4 rounded-xl transition-colors"
+                    >
+                      <div className="flex-1">
+                        <p className="text-stone-100 font-medium">{bb.name}</p>
+                        <p className="text-stone-400 text-sm">{bb.firma || 'Keine Firma'} • {bb.email}</p>
+                        <p className="text-stone-500 text-sm">{meineLernende.length} Lernende • {(bb.codes || []).length} Codes</p>
+                      </div>
+                      <span className="text-stone-400">{isExpanded ? '▼' : '▶'}</span>
+                    </button>
+                    <Button 
+                      variant="danger" 
+                      size="small" 
+                      onClick={() => deleteBerufsbildner(bb.id)} 
+                      disabled={meineLernende.length > 0 || deleting === bb.id}
+                      className="ml-4"
+                    >
+                      {deleting === bb.id ? '...' : 'Löschen'}
+                    </Button>
                   </div>
-                  <Button 
-                    variant="danger" 
-                    size="small" 
-                    onClick={() => deleteBerufsbildner(bb.id)} 
-                    disabled={lernendeAnzahl > 0 || deleting === bb.id}
-                  >
-                    {deleting === bb.id ? '...' : 'Löschen'}
-                  </Button>
+                  
+                  {/* Lernende Accordion */}
+                  {isExpanded && meineLernende.length > 0 && (
+                    <div className="px-4 pb-4 pt-2 border-t border-stone-600/50">
+                      <h3 className="text-sm font-semibold text-stone-300 mb-3">Lernende von {bb.name}:</h3>
+                      <div className="space-y-2">
+                        {meineLernende.map(l => {
+                          const lernendeRapporte = rapporte.filter(r => r.lernenderId === l.id);
+                          return (
+                            <div 
+                              key={l.id}
+                              className="flex items-center justify-between p-3 bg-stone-800/50 rounded-lg"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className="text-2xl">👷</span>
+                                <div>
+                                  <p className="text-stone-100 font-medium">{l.name}</p>
+                                  <p className="text-stone-400 text-sm">
+                                    Code: {l.code} · {l.lehrjahr}. Lehrjahr · {lernendeRapporte.length} Rapporte
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {isExpanded && meineLernende.length === 0 && (
+                    <div className="px-4 pb-4 pt-2 border-t border-stone-600/50">
+                      <p className="text-stone-500 text-center py-3">Noch keine Lernenden</p>
+                    </div>
+                  )}
                 </div>
               );
             })}
