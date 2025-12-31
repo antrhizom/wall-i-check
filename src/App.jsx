@@ -1035,9 +1035,9 @@ const LoginScreen = ({ onLogin }) => {
       </div>
       <Card className="w-full max-w-md relative">
         <div className="text-center mb-8">
-          <img src="/logo.png" alt="Wall-I-Check Logo" className="w-48 h-48 mx-auto mb-4 object-contain" />
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Wall-I-Check</h1>
-          <p className="text-gray-600">Lernplattform für die Grundbildung Maurer/in EFZ</p>
+          <img src="/logo.png" alt="wall-i-check Logo" className="w-48 h-48 mx-auto mb-4 object-contain" />
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">wall-i-check</h1>
+          <p className="text-gray-600">Lernplattform für die Grundbildung Maurer/in EFZ und EBA</p>
         </div>
         {mode === 'select' ? (
           <div className="space-y-4">
@@ -1089,7 +1089,7 @@ const LernendenNav = ({ currentView, onNavigate, onLogout, userName }) => (
     <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
-        <span className="font-semibold text-gray-900 hidden sm:block">Wall-I-Check</span>
+        <span className="font-semibold text-gray-900 hidden sm:block">wall-i-check</span>
         <div className="flex gap-1">
           {[{ id: 'rapport', icon: '📝' }, { id: 'dashboard', icon: '📊' }, { id: 'statistik', icon: '📈' }, { id: 'verlauf', icon: '📅' }, { id: 'notizen', icon: '📋' }].map(item => (
             <button key={item.id} onClick={() => onNavigate(item.id)} className={`px-3 py-2 rounded-lg transition-all ${currentView === item.id ? 'bg-blue-500/20 text-blue-400' : 'text-gray-600 hover:text-gray-900'}`}>
@@ -1729,7 +1729,7 @@ const BerufsbildnerNav = ({ currentView, onNavigate, onLogout, userName }) => (
     <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
-        <span className="font-semibold text-gray-900 hidden sm:block">Wall-I-Check</span>
+        <span className="font-semibold text-gray-900 hidden sm:block">wall-i-check</span>
         <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-0.5 rounded-full">BB</span>
         <div className="flex gap-1">
           {[{ id: 'lernende', icon: '👷' }, { id: 'bewertungen', icon: '📋' }, { id: 'codes', icon: '🔑' }, { id: 'uebersicht', icon: '📊' }].map(item => (
@@ -2237,7 +2237,7 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <nav className="bg-white backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2"><img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" /><span className="font-semibold text-gray-900">Wall-I-Check</span><span className="bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded-full">Admin</span></div>
+          <div className="flex items-center gap-2"><img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" /><span className="font-semibold text-gray-900">wall-i-check</span><span className="bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded-full">Admin</span></div>
           <Button variant="ghost" size="small" onClick={onLogout}>Abmelden</Button>
         </div>
       </nav>
