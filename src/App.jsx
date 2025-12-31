@@ -80,9 +80,9 @@ const RatingStars = ({ value, onChange, readOnly = false, size = 'normal' }) => 
 
 const ProgressBar = ({ value, max = 5, color = 'amber' }) => {
   const percentage = Math.min(100, (value / max) * 100);
-  const colors = { amber: 'bg-amber-500', green: 'bg-emerald-500', blue: 'bg-blue-500' };
+  const colors = { amber: 'bg-blue-500', green: 'bg-emerald-500', blue: 'bg-blue-500' };
   return (
-    <div className="h-2 bg-stone-700 rounded-full overflow-hidden">
+    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
       <div className={`h-full ${colors[color]} transition-all duration-500`} style={{ width: `${percentage}%` }} />
     </div>
   );
@@ -97,19 +97,19 @@ const Accordion = ({ title, children, defaultOpen = false, badge = null }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   
   return (
-    <div className="border border-stone-700/50 rounded-xl overflow-hidden">
+    <div className="border border-gray-200/50 rounded-xl overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-4 bg-stone-800/30 hover:bg-stone-800/50 transition-colors flex items-center justify-between"
+        className="w-full p-4 bg-white/30 hover:bg-gray-50 transition-colors flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <span className="text-stone-100 font-medium">{title}</span>
-          {badge && <span className="bg-amber-500/20 text-amber-400 text-xs px-2 py-1 rounded-full">{badge}</span>}
+          <span className="text-gray-900 font-medium">{title}</span>
+          {badge && <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full">{badge}</span>}
         </div>
-        <span className="text-stone-400 text-xl">{isOpen ? '−' : '+'}</span>
+        <span className="text-gray-600 text-xl">{isOpen ? '−' : '+'}</span>
       </button>
       {isOpen && (
-        <div className="p-4 bg-stone-800/10">
+        <div className="p-4 bg-white/10">
           {children}
         </div>
       )}
@@ -401,7 +401,7 @@ const StatistikView = ({ rapporte, lernenderId }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-stone-100">📊 Erweiterte Statistik</h2>
+        <h2 className="text-xl font-bold text-gray-900">📊 Erweiterte Statistik</h2>
         <div className="flex gap-2">
           {['woche', 'monat', 'jahr'].map(filter => (
             <button
@@ -409,8 +409,8 @@ const StatistikView = ({ rapporte, lernenderId }) => {
               onClick={() => setZeitFilter(filter)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 zeitFilter === filter
-                  ? 'bg-amber-500 text-stone-900'
-                  : 'bg-stone-700 text-stone-300 hover:bg-stone-600'
+                  ? 'bg-blue-500 text-stone-900'
+                  : 'bg-gray-100 text-gray-700 hover:bg-stone-600'
               }`}
             >
               {filter === 'woche' ? 'Woche' : filter === 'monat' ? 'Monat' : 'Jahr'}
@@ -421,19 +421,19 @@ const StatistikView = ({ rapporte, lernenderId }) => {
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
-          <p className="text-stone-400 text-sm">Rapporte</p>
-          <p className="text-3xl font-bold text-stone-100 mt-1">{gefilterteRapporte.length}</p>
+          <p className="text-gray-600 text-sm">Rapporte</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">{gefilterteRapporte.length}</p>
         </Card>
         <Card>
-          <p className="text-stone-400 text-sm">Arbeiten</p>
-          <p className="text-3xl font-bold text-amber-400 mt-1">{totalArbeiten}</p>
+          <p className="text-gray-600 text-sm">Arbeiten</p>
+          <p className="text-3xl font-bold text-blue-400 mt-1">{totalArbeiten}</p>
         </Card>
         <Card>
-          <p className="text-stone-400 text-sm">Ø Bewertung</p>
+          <p className="text-gray-600 text-sm">Ø Bewertung</p>
           <p className="text-3xl font-bold text-emerald-400 mt-1">{avgBewertung.toFixed(1)}</p>
         </Card>
         <Card>
-          <p className="text-stone-400 text-sm">Kategorien</p>
+          <p className="text-gray-600 text-sm">Kategorien</p>
           <p className="text-3xl font-bold text-blue-400 mt-1">{Object.keys(arbeitsStats).length}</p>
         </Card>
       </div>
@@ -442,17 +442,17 @@ const StatistikView = ({ rapporte, lernenderId }) => {
       <Card>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-stone-100">📈 Aktivitätsverlauf Generator</h3>
+            <h3 className="text-lg font-semibold text-gray-900">📈 Aktivitätsverlauf Generator</h3>
             <div className="flex gap-2">
               <button
                 onClick={() => setChartType('kategorien')}
-                className={`px-3 py-1 rounded-lg text-sm ${chartType === 'kategorien' ? 'bg-amber-500 text-stone-900' : 'bg-stone-700 text-stone-300'}`}
+                className={`px-3 py-1 rounded-lg text-sm ${chartType === 'kategorien' ? 'bg-blue-500 text-stone-900' : 'bg-gray-100 text-gray-700'}`}
               >
                 Arbeitskategorien
               </button>
               <button
                 onClick={() => setChartType('kompetenzen')}
-                className={`px-3 py-1 rounded-lg text-sm ${chartType === 'kompetenzen' ? 'bg-amber-500 text-stone-900' : 'bg-stone-700 text-stone-300'}`}
+                className={`px-3 py-1 rounded-lg text-sm ${chartType === 'kompetenzen' ? 'bg-blue-500 text-stone-900' : 'bg-gray-100 text-gray-700'}`}
               >
                 Kompetenzen
               </button>
@@ -461,7 +461,7 @@ const StatistikView = ({ rapporte, lernenderId }) => {
           
           {/* Auswahl der Items für den Chart */}
           <div>
-            <p className="text-sm text-stone-400 mb-2">Wähle aus, was im Diagramm angezeigt werden soll:</p>
+            <p className="text-sm text-gray-600 mb-2">Wähle aus, was im Diagramm angezeigt werden soll:</p>
             <div className="flex flex-wrap gap-2">
               {chartType === 'kategorien' ? (
                 Object.entries(ARBEITSKATEGORIEN).map(([key, kat]) => (
@@ -470,8 +470,8 @@ const StatistikView = ({ rapporte, lernenderId }) => {
                     onClick={() => toggleChartItem(key)}
                     className={`px-3 py-1 rounded-lg text-sm transition-all ${
                       selectedChartItems.includes(key)
-                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50'
-                        : 'bg-stone-700/30 text-stone-400 border border-stone-600 hover:border-stone-500'
+                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                        : 'bg-gray-100/30 text-gray-600 border border-gray-300 hover:border-gray-400'
                     }`}
                   >
                     {kat.icon} {kat.name}
@@ -484,8 +484,8 @@ const StatistikView = ({ rapporte, lernenderId }) => {
                     onClick={() => toggleChartItem(komp.id)}
                     className={`px-3 py-1 rounded-lg text-sm transition-all ${
                       selectedChartItems.includes(komp.id)
-                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50'
-                        : 'bg-stone-700/30 text-stone-400 border border-stone-600 hover:border-stone-500'
+                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                        : 'bg-gray-100/30 text-gray-600 border border-gray-300 hover:border-gray-400'
                     }`}
                   >
                     {komp.icon} {komp.name}
@@ -529,7 +529,7 @@ const StatistikView = ({ rapporte, lernenderId }) => {
                           />
                         ))}
                       </div>
-                      <span className="text-xs text-stone-400 mt-2">{periode.label}</span>
+                      <span className="text-xs text-gray-600 mt-2">{periode.label}</span>
                     </div>
                   );
                 })}
@@ -540,7 +540,7 @@ const StatistikView = ({ rapporte, lernenderId }) => {
       </Card>
       
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-stone-100">🏗️ Arbeitskategorien</h3>
+        <h3 className="text-lg font-semibold text-gray-900"><span className="inline-flex items-center gap-2"><img src="/logo.png" className="w-5 h-5" /> Arbeitskategorien</span></h3>
         {Object.entries(arbeitsStats)
           .sort(([, a], [, b]) => b.count - a.count)
           .map(([katKey, katData]) => {
@@ -555,31 +555,31 @@ const StatistikView = ({ rapporte, lernenderId }) => {
               >
                 <div className="space-y-3">
                   <div className="grid grid-cols-3 gap-3 text-sm mb-4">
-                    <div className="text-center p-2 bg-stone-700/30 rounded">
-                      <p className="text-stone-400">Gesamt</p>
-                      <p className="text-stone-100 font-bold">{katData.count}×</p>
+                    <div className="text-center p-2 bg-gray-100/30 rounded">
+                      <p className="text-gray-600">Gesamt</p>
+                      <p className="text-gray-900 font-bold">{katData.count}×</p>
                     </div>
-                    <div className="text-center p-2 bg-stone-700/30 rounded">
-                      <p className="text-stone-400">Ø Bewertung</p>
+                    <div className="text-center p-2 bg-gray-100/30 rounded">
+                      <p className="text-gray-600">Ø Bewertung</p>
                       <p className="text-emerald-400 font-bold">
                         {(katData.totalBewertung / katData.count).toFixed(1)}
                       </p>
                     </div>
-                    <div className="text-center p-2 bg-stone-700/30 rounded">
-                      <p className="text-stone-400">Verbesserungen</p>
+                    <div className="text-center p-2 bg-gray-100/30 rounded">
+                      <p className="text-gray-600">Verbesserungen</p>
                       <p className="text-blue-400 font-bold">{katData.verbesserungen}</p>
                     </div>
                   </div>
                   
-                  <h4 className="text-stone-300 font-medium text-sm mb-2">Einzelne Aufgaben:</h4>
+                  <h4 className="text-gray-700 font-medium text-sm mb-2">Einzelne Aufgaben:</h4>
                   <div className="space-y-2">
                     {Object.entries(katData.arbeiten)
                       .sort(([, a], [, b]) => b.count - a.count)
                       .map(([arbeit, arbeitData]) => (
-                        <div key={arbeit} className="flex items-center justify-between p-2 bg-stone-700/20 rounded">
-                          <span className="text-stone-200 text-sm flex-1">{arbeit}</span>
+                        <div key={arbeit} className="flex items-center justify-between p-2 bg-gray-100/20 rounded">
+                          <span className="text-gray-800 text-sm flex-1">{arbeit}</span>
                           <div className="flex items-center gap-3">
-                            <span className="text-amber-400 text-sm">{arbeitData.count}×</span>
+                            <span className="text-blue-400 text-sm">{arbeitData.count}×</span>
                             <span className="text-emerald-400 text-sm">
                               Ø {(arbeitData.totalBewertung / arbeitData.count).toFixed(1)}
                             </span>
@@ -597,7 +597,7 @@ const StatistikView = ({ rapporte, lernenderId }) => {
       </div>
       
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-stone-100">💪 Kompetenzen</h3>
+        <h3 className="text-lg font-semibold text-gray-900">💪 Kompetenzen</h3>
         {KOMPETENZEN
           .filter(k => kompetenzStats[k.id])
           .sort((a, b) => (kompetenzStats[b.id]?.count || 0) - (kompetenzStats[a.id]?.count || 0))
@@ -610,17 +610,17 @@ const StatistikView = ({ rapporte, lernenderId }) => {
                 badge={`${data.count}×`}
               >
                 <div className="space-y-2">
-                  <p className="text-stone-300 text-sm">
-                    Diese Kompetenz wurde in <span className="text-amber-400 font-semibold">{data.count} Rapporten</span> geübt.
+                  <p className="text-gray-700 text-sm">
+                    Diese Kompetenz wurde in <span className="text-blue-400 font-semibold">{data.count} Rapporten</span> geübt.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {data.rapporte.slice(0, 10).map((datum, i) => (
-                      <span key={i} className="text-xs bg-stone-700/30 px-2 py-1 rounded text-stone-400">
+                      <span key={i} className="text-xs bg-gray-100/30 px-2 py-1 rounded text-gray-600">
                         {formatDateShort(datum)}
                       </span>
                     ))}
                     {data.rapporte.length > 10 && (
-                      <span className="text-xs text-stone-500 px-2 py-1">+{data.rapporte.length - 10} weitere</span>
+                      <span className="text-xs text-gray-500 px-2 py-1">+{data.rapporte.length - 10} weitere</span>
                     )}
                   </div>
                 </div>
@@ -648,14 +648,14 @@ const StatistikView = ({ rapporte, lernenderId }) => {
               const kat = ARBEITSKATEGORIEN[selectedDrillDown.key];
               return (
                 <div>
-                  <h4 className="text-stone-100 font-medium mb-3">{kat.icon} {kat.name} - Detailansicht</h4>
+                  <h4 className="text-gray-900 font-medium mb-3">{kat.icon} {kat.name} - Detailansicht</h4>
                   
                   {details.vielGeubt.length > 0 && (
                     <div className="mb-4">
                       <p className="text-emerald-400 font-medium text-sm mb-2">✅ Viel geübt (3+×):</p>
                       <div className="space-y-1">
                         {details.vielGeubt.map((item, i) => (
-                          <div key={i} className="text-sm text-stone-300 bg-emerald-500/10 p-2 rounded flex justify-between">
+                          <div key={i} className="text-sm text-gray-700 bg-emerald-500/10 p-2 rounded flex justify-between">
                             <span>{item.arbeit}</span>
                             <span className="text-emerald-400">{item.count}× • Ø {item.avgBewertung}</span>
                           </div>
@@ -666,12 +666,12 @@ const StatistikView = ({ rapporte, lernenderId }) => {
                   
                   {details.wenigGeubt.length > 0 && (
                     <div className="mb-4">
-                      <p className="text-amber-400 font-medium text-sm mb-2">⚠️ Wenig geübt (1-2×):</p>
+                      <p className="text-blue-400 font-medium text-sm mb-2">⚠️ Wenig geübt (1-2×):</p>
                       <div className="space-y-1">
                         {details.wenigGeubt.map((item, i) => (
-                          <div key={i} className="text-sm text-stone-300 bg-amber-500/10 p-2 rounded flex justify-between">
+                          <div key={i} className="text-sm text-gray-700 bg-blue-500/10 p-2 rounded flex justify-between">
                             <span>{item.arbeit}</span>
-                            <span className="text-amber-400">{item.count}× • Ø {item.avgBewertung}</span>
+                            <span className="text-blue-400">{item.count}× • Ø {item.avgBewertung}</span>
                           </div>
                         ))}
                       </div>
@@ -683,7 +683,7 @@ const StatistikView = ({ rapporte, lernenderId }) => {
                       <p className="text-red-400 font-medium text-sm mb-2">❌ Noch nicht geübt:</p>
                       <div className="space-y-1">
                         {details.nichtGeubt.map((item, i) => (
-                          <div key={i} className="text-sm text-stone-300 bg-red-500/10 p-2 rounded">
+                          <div key={i} className="text-sm text-gray-700 bg-red-500/10 p-2 rounded">
                             {item.arbeit}
                           </div>
                         ))}
@@ -699,13 +699,13 @@ const StatistikView = ({ rapporte, lernenderId }) => {
               const komp = KOMPETENZEN.find(k => k.id === selectedDrillDown.id);
               return (
                 <div>
-                  <h4 className="text-stone-100 font-medium mb-3">{komp.icon} {komp.name} - Detailansicht</h4>
+                  <h4 className="text-gray-900 font-medium mb-3">{komp.icon} {komp.name} - Detailansicht</h4>
                   
                   <div className="mb-4">
-                    <p className="text-stone-300 text-sm mb-2">
+                    <p className="text-gray-700 text-sm mb-2">
                       Status: <span className={`font-semibold ${
                         details.status === 'viel' ? 'text-emerald-400' :
-                        details.status === 'wenig' ? 'text-amber-400' :
+                        details.status === 'wenig' ? 'text-blue-400' :
                         'text-red-400'
                       }`}>
                         {details.status === 'viel' ? '✅ Viel geübt' :
@@ -713,17 +713,17 @@ const StatistikView = ({ rapporte, lernenderId }) => {
                          '❌ Noch nicht geübt'}
                       </span>
                     </p>
-                    <p className="text-stone-300 text-sm">
-                      In <span className="text-amber-400 font-semibold">{details.count} Rapporten</span> geübt
+                    <p className="text-gray-700 text-sm">
+                      In <span className="text-blue-400 font-semibold">{details.count} Rapporten</span> geübt
                     </p>
                   </div>
                   
                   {details.rapporte.length > 0 && (
                     <div>
-                      <p className="text-stone-400 text-sm mb-2">Letzte Aktivitäten:</p>
+                      <p className="text-gray-600 text-sm mb-2">Letzte Aktivitäten:</p>
                       <div className="flex flex-wrap gap-2">
                         {details.rapporte.slice(0, 15).map((datum, i) => (
-                          <span key={i} className="text-xs bg-stone-700/30 px-2 py-1 rounded text-stone-400">
+                          <span key={i} className="text-xs bg-gray-100/30 px-2 py-1 rounded text-gray-600">
                             {formatDateShort(datum)}
                           </span>
                         ))}
@@ -739,13 +739,13 @@ const StatistikView = ({ rapporte, lernenderId }) => {
           <div className="space-y-6">
             {/* ALLE ARBEITSKATEGORIEN */}
             <div>
-              <h4 className="text-stone-300 font-medium text-sm mb-3">Arbeitskategorien (klicke für Details):</h4>
+              <h4 className="text-gray-700 font-medium text-sm mb-3">Arbeitskategorien (klicke für Details):</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {Object.entries(ARBEITSKATEGORIEN).map(([key, kat]) => {
                   const count = arbeitsStats[key]?.count || 0;
                   const status = count === 0 ? 'nicht' : count < 3 ? 'wenig' : 'viel';
                   const statusColor = status === 'viel' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' :
-                                     status === 'wenig' ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' :
+                                     status === 'wenig' ? 'text-blue-400 bg-blue-500/10 border-blue-500/30' :
                                      'text-red-400 bg-red-500/10 border-red-500/30';
                   const statusIcon = status === 'viel' ? '✅' : status === 'wenig' ? '⚠️' : '❌';
                   
@@ -771,13 +771,13 @@ const StatistikView = ({ rapporte, lernenderId }) => {
             
             {/* ALLE KOMPETENZEN */}
             <div>
-              <h4 className="text-stone-300 font-medium text-sm mb-3">Kompetenzen (klicke für Details):</h4>
+              <h4 className="text-gray-700 font-medium text-sm mb-3">Kompetenzen (klicke für Details):</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {KOMPETENZEN.map(komp => {
                   const count = kompetenzStats[komp.id]?.count || 0;
                   const status = count === 0 ? 'nicht' : count < 3 ? 'wenig' : 'viel';
                   const statusColor = status === 'viel' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' :
-                                     status === 'wenig' ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' :
+                                     status === 'wenig' ? 'text-blue-400 bg-blue-500/10 border-blue-500/30' :
                                      'text-red-400 bg-red-500/10 border-red-500/30';
                   const statusIcon = status === 'viel' ? '✅' : status === 'wenig' ? '⚠️' : '❌';
                   
@@ -802,10 +802,10 @@ const StatistikView = ({ rapporte, lernenderId }) => {
             </div>
             
             {/* ERKLÄRUNG */}
-            <div className="mt-4 p-3 bg-stone-700/20 rounded-lg">
-              <p className="text-stone-400 text-xs">
+            <div className="mt-4 p-3 bg-gray-100/20 rounded-lg">
+              <p className="text-gray-600 text-xs">
                 <span className="text-emerald-400">✅ Viel geübt (3+×)</span> • 
-                <span className="text-amber-400"> ⚠️ Wenig geübt (1-2×)</span> • 
+                <span className="text-blue-400"> ⚠️ Wenig geübt (1-2×)</span> • 
                 <span className="text-red-400"> ❌ Noch nicht geübt</span>
               </p>
             </div>
@@ -821,16 +821,16 @@ const StatistikView = ({ rapporte, lernenderId }) => {
 
 
 const Card = ({ children, className = '', onClick }) => (
-  <div className={`bg-stone-800/50 backdrop-blur-sm border border-stone-700/50 rounded-2xl p-6 ${onClick ? 'cursor-pointer hover:border-amber-500/50 transition-all' : ''} ${className}`} onClick={onClick}>
+  <div className={`bg-gray-50 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-6 ${onClick ? 'cursor-pointer hover:border-blue-500/50 transition-all' : ''} ${className}`} onClick={onClick}>
     {children}
   </div>
 );
 
 const Button = ({ children, variant = 'primary', size = 'normal', className = '', ...props }) => {
   const variants = {
-    primary: 'bg-amber-500 hover:bg-amber-400 text-stone-900 font-semibold',
-    secondary: 'bg-stone-700 hover:bg-stone-600 text-stone-100',
-    ghost: 'bg-transparent hover:bg-stone-700/50 text-stone-300',
+    primary: 'bg-blue-500 hover:bg-amber-400 text-stone-900 font-semibold',
+    secondary: 'bg-gray-100 hover:bg-stone-600 text-gray-900',
+    ghost: 'bg-transparent hover:bg-gray-100/50 text-gray-700',
     danger: 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30'
   };
   const sizes = { small: 'px-3 py-1.5 text-sm', normal: 'px-5 py-2.5', large: 'px-8 py-4 text-lg' };
@@ -839,15 +839,15 @@ const Button = ({ children, variant = 'primary', size = 'normal', className = ''
 
 const Input = ({ label, ...props }) => (
   <div className="space-y-2">
-    {label && <label className="text-sm text-stone-400">{label}</label>}
-    <input className="w-full bg-stone-800/50 border border-stone-600 rounded-xl px-4 py-3 text-stone-100 focus:border-amber-500 focus:outline-none transition-colors" {...props} />
+    {label && <label className="text-sm text-gray-600">{label}</label>}
+    <input className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none transition-colors" {...props} />
   </div>
 );
 
 const Select = ({ label, options, value, onChange }) => (
   <div className="space-y-2">
-    {label && <label className="text-sm text-stone-400">{label}</label>}
-    <select className="w-full bg-stone-800/50 border border-stone-600 rounded-xl px-4 py-3 text-stone-100 focus:border-amber-500 focus:outline-none" value={value} onChange={onChange}>
+    {label && <label className="text-sm text-gray-600">{label}</label>}
+    <select className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none" value={value} onChange={onChange}>
       {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
     </select>
   </div>
@@ -859,10 +859,10 @@ const Modal = ({ isOpen, onClose, title, children, size = 'normal' }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative bg-stone-800 border border-stone-700 rounded-2xl p-6 w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto`}>
+      <div className={`relative bg-white border border-gray-200 rounded-2xl p-6 w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto`}>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-stone-100">{title}</h2>
-          <button onClick={onClose} className="text-stone-400 hover:text-stone-100 text-2xl">×</button>
+          <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+          <button onClick={onClose} className="text-gray-600 hover:text-gray-900 text-2xl">×</button>
         </div>
         {children}
       </div>
@@ -872,7 +872,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'normal' }) => {
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center p-8">
-    <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
   </div>
 );
 
@@ -1028,16 +1028,16 @@ const LoginScreen = ({ onLogin }) => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-amber-600/5 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl" />
       </div>
       <Card className="w-full max-w-md relative">
         <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🏗️</div>
-          <h1 className="text-3xl font-bold text-stone-100 mb-2">MauerwerkCheck</h1>
-          <p className="text-stone-400">Lernplattform für die Grundbildung Maurer/in EFZ</p>
+          <img src="/logo.png" alt="Wall-I-Check Logo" className="w-48 h-48 mx-auto mb-4 object-contain" />
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Wall-I-Check</h1>
+          <p className="text-gray-600">Lernplattform für die Grundbildung Maurer/in EFZ</p>
         </div>
         {mode === 'select' ? (
           <div className="space-y-4">
@@ -1047,13 +1047,13 @@ const LoginScreen = ({ onLogin }) => {
           </div>
         ) : (
           <div className="space-y-4">
-            <button onClick={() => { setMode('select'); setError(''); }} className="text-amber-500 hover:text-amber-400 flex items-center gap-2 mb-4">← Zurück</button>
+            <button onClick={() => { setMode('select'); setError(''); }} className="text-blue-500 hover:text-blue-400 flex items-center gap-2 mb-4">← Zurück</button>
             {mode === 'lernend' && (
               <>
                 <Input label="Zugangscode von Berufsbildner/in" placeholder="z.B. ABC123" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} />
                 {error && <p className="text-red-400 text-sm">{error}</p>}
                 <Button variant="primary" size="large" className="w-full" onClick={handleLernendLogin} disabled={loading}>{loading ? 'Laden...' : 'Einloggen'}</Button>
-                <p className="text-stone-500 text-sm text-center">Dein/e Berufsbildner/in hat dir einen Code gegeben und deinen Account erstellt.</p>
+                <p className="text-gray-500 text-sm text-center">Dein/e Berufsbildner/in hat dir einen Code gegeben und deinen Account erstellt.</p>
               </>
             )}
             {mode === 'berufsbildner' && (
@@ -1062,7 +1062,7 @@ const LoginScreen = ({ onLogin }) => {
                 <Input label="Passwort" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
                 {error && <p className="text-red-400 text-sm">{error}</p>}
                 <Button variant="primary" size="large" className="w-full" onClick={handleBerufsbildnerLogin} disabled={loading || !email || !password}>{loading ? 'Laden...' : 'Einloggen'}</Button>
-                <p className="text-stone-500 text-sm text-center">Passwort vom Admin erhalten</p>
+                <p className="text-gray-500 text-sm text-center">Passwort vom Admin erhalten</p>
               </>
             )}
             {mode === 'admin' && (
@@ -1085,21 +1085,21 @@ const LoginScreen = ({ onLogin }) => {
 // ============================================================================
 
 const LernendenNav = ({ currentView, onNavigate, onLogout, userName }) => (
-  <nav className="bg-stone-800/80 backdrop-blur-md border-b border-stone-700 sticky top-0 z-40">
+  <nav className="bg-white backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-40">
     <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <span className="text-2xl">🏗️</span>
-        <span className="font-semibold text-stone-100 hidden sm:block">MauerwerkCheck</span>
+        <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+        <span className="font-semibold text-gray-900 hidden sm:block">Wall-I-Check</span>
         <div className="flex gap-1">
           {[{ id: 'rapport', icon: '📝' }, { id: 'dashboard', icon: '📊' }, { id: 'statistik', icon: '📈' }, { id: 'verlauf', icon: '📅' }, { id: 'notizen', icon: '📋' }].map(item => (
-            <button key={item.id} onClick={() => onNavigate(item.id)} className={`px-3 py-2 rounded-lg transition-all ${currentView === item.id ? 'bg-amber-500/20 text-amber-400' : 'text-stone-400 hover:text-stone-100'}`}>
+            <button key={item.id} onClick={() => onNavigate(item.id)} className={`px-3 py-2 rounded-lg transition-all ${currentView === item.id ? 'bg-blue-500/20 text-blue-400' : 'text-gray-600 hover:text-gray-900'}`}>
               {item.icon}
             </button>
           ))}
         </div>
       </div>
       <div className="flex items-center gap-4">
-        <span className="text-stone-400 text-sm hidden sm:block">👷 {userName}</span>
+        <span className="text-gray-600 text-sm hidden sm:block">👷 {userName}</span>
         <Button variant="ghost" size="small" onClick={onLogout}>Abmelden</Button>
       </div>
     </div>
@@ -1183,19 +1183,19 @@ const RapportForm = ({ lernender, rapporte, onSave }) => {
       {/* Datum-Auswahl */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-100">Tagesrapport</h1>
-          <p className="text-stone-400">{formatDate(selectedDatum)}</p>
+          <h1 className="text-2xl font-bold text-gray-900">Tagesrapport</h1>
+          <p className="text-gray-600">{formatDate(selectedDatum)}</p>
         </div>
         <div className="flex items-center gap-2">
           {vorhandenRapport && <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm">✓ Gespeichert</span>}
-          {!isToday && <span className="bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full text-sm">📅 Nachtrag</span>}
+          {!isToday && <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">📅 Nachtrag</span>}
         </div>
       </div>
       
       {/* Datum-Navigation */}
       <Card>
         <div className="flex items-center justify-between">
-          <button onClick={() => changeDate(-1)} className="p-2 rounded-lg bg-stone-700/50 hover:bg-stone-700 text-stone-300 transition-all">
+          <button onClick={() => changeDate(-1)} className="p-2 rounded-lg bg-gray-100/50 hover:bg-gray-100 text-gray-700 transition-all">
             ← Vorheriger Tag
           </button>
           <div className="flex items-center gap-3">
@@ -1204,10 +1204,10 @@ const RapportForm = ({ lernender, rapporte, onSave }) => {
               value={selectedDatum} 
               max={heute}
               onChange={(e) => setSelectedDatum(e.target.value)}
-              className="bg-stone-700/50 border border-stone-600 rounded-lg px-3 py-2 text-stone-100 focus:border-amber-500 focus:outline-none"
+              className="bg-gray-100/50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none"
             />
             {!isToday && (
-              <button onClick={() => setSelectedDatum(heute)} className="px-3 py-2 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 text-sm">
+              <button onClick={() => setSelectedDatum(heute)} className="px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 text-sm">
                 Heute
               </button>
             )}
@@ -1215,7 +1215,7 @@ const RapportForm = ({ lernender, rapporte, onSave }) => {
           <button 
             onClick={() => changeDate(1)} 
             disabled={isToday}
-            className={`p-2 rounded-lg transition-all ${isToday ? 'bg-stone-800 text-stone-600 cursor-not-allowed' : 'bg-stone-700/50 hover:bg-stone-700 text-stone-300'}`}
+            className={`p-2 rounded-lg transition-all ${isToday ? 'bg-white text-stone-600 cursor-not-allowed' : 'bg-gray-100/50 hover:bg-gray-100 text-gray-700'}`}
           >
             Nächster Tag →
           </button>
@@ -1223,14 +1223,14 @@ const RapportForm = ({ lernender, rapporte, onSave }) => {
       </Card>
       
       <Card>
-        <h2 className="text-lg font-semibold text-stone-100 mb-4">Arbeitskategorie wählen</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Arbeitskategorie wählen</h2>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
           {Object.entries(ARBEITSKATEGORIEN).map(([key, kat]) => (
             <button key={key} onClick={() => setSelectedKategorie(selectedKategorie === key ? null : key)}
-              className={`p-2 rounded-xl text-center transition-all ${selectedKategorie === key ? 'bg-amber-500/20 border-amber-500/50 border' : 'bg-stone-700/30 border border-stone-700 hover:border-stone-600'}`}>
+              className={`p-2 rounded-xl text-center transition-all ${selectedKategorie === key ? 'bg-blue-500/20 border-blue-500/50 border' : 'bg-gray-100/30 border border-gray-200 hover:border-gray-300'}`}>
               <span className="text-xl">{kat.icon}</span>
-              <p className="text-xs text-stone-400 mt-1 truncate">{kat.name}</p>
-              {selectedArbeiten.filter(a => a.kategorie === key).length > 0 && <span className="inline-block mt-1 bg-amber-500 text-stone-900 text-xs px-1.5 rounded-full">{selectedArbeiten.filter(a => a.kategorie === key).length}</span>}
+              <p className="text-xs text-gray-600 mt-1 truncate">{kat.name}</p>
+              {selectedArbeiten.filter(a => a.kategorie === key).length > 0 && <span className="inline-block mt-1 bg-blue-500 text-stone-900 text-xs px-1.5 rounded-full">{selectedArbeiten.filter(a => a.kategorie === key).length}</span>}
             </button>
           ))}
         </div>
@@ -1238,22 +1238,22 @@ const RapportForm = ({ lernender, rapporte, onSave }) => {
       
       {selectedKategorie && (
         <Card>
-          <h2 className="text-lg font-semibold text-stone-100 mb-4">{ARBEITSKATEGORIEN[selectedKategorie].icon} {ARBEITSKATEGORIEN[selectedKategorie].name}</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{ARBEITSKATEGORIEN[selectedKategorie].icon} {ARBEITSKATEGORIEN[selectedKategorie].name}</h2>
           <div className="space-y-2 max-h-80 overflow-y-auto">
             {ARBEITSKATEGORIEN[selectedKategorie].arbeiten.map((arbeit) => {
               const selected = selectedArbeiten.find(a => a.kategorie === selectedKategorie && a.arbeit === arbeit);
               return (
-                <div key={arbeit} className={`p-3 rounded-xl border transition-all ${selected ? 'bg-amber-500/10 border-amber-500/30' : 'bg-stone-700/20 border-stone-700'}`}>
+                <div key={arbeit} className={`p-3 rounded-xl border transition-all ${selected ? 'bg-blue-500/10 border-blue-500/30' : 'bg-gray-100/20 border-gray-200'}`}>
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" checked={!!selected} onChange={() => toggleArbeit(selectedKategorie, arbeit)} className="mt-1 w-5 h-5 rounded" />
-                    <span className="text-stone-200 flex-1">{arbeit}</span>
+                    <span className="text-gray-800 flex-1">{arbeit}</span>
                   </label>
                   {selected && (
                     <div className="mt-3 ml-8 space-y-3">
-                      <div><p className="text-sm text-stone-400 mb-1">Wie gut hast du es gemacht?</p><RatingStars value={selected.bewertung} onChange={(v) => updateArbeitBewertung(selectedKategorie, arbeit, 'bewertung', v)} /></div>
+                      <div><p className="text-sm text-gray-600 mb-1">Wie gut hast du es gemacht?</p><RatingStars value={selected.bewertung} onChange={(v) => updateArbeitBewertung(selectedKategorie, arbeit, 'bewertung', v)} /></div>
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" checked={selected.verbessert} onChange={(e) => updateArbeitBewertung(selectedKategorie, arbeit, 'verbessert', e.target.checked)} className="w-5 h-5 rounded" />
-                        <span className="text-stone-300">Ich habe mich verbessert 📈</span>
+                        <span className="text-gray-700">Ich habe mich verbessert 📈</span>
                       </label>
                     </div>
                   )}
@@ -1266,11 +1266,11 @@ const RapportForm = ({ lernender, rapporte, onSave }) => {
       
       {selectedArbeiten.length > 0 && (
         <Card>
-          <h2 className="text-lg font-semibold text-stone-100 mb-4">Ausgewählte Arbeiten ({selectedArbeiten.length})</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Ausgewählte Arbeiten ({selectedArbeiten.length})</h2>
           <div className="space-y-2">
             {selectedArbeiten.map((a, i) => (
-              <div key={i} className="flex items-center justify-between p-2 bg-stone-700/30 rounded-lg">
-                <div className="flex items-center gap-2"><span>{ARBEITSKATEGORIEN[a.kategorie]?.icon}</span><span className="text-stone-200 text-sm">{a.arbeit}</span></div>
+              <div key={i} className="flex items-center justify-between p-2 bg-gray-100/30 rounded-lg">
+                <div className="flex items-center gap-2"><span>{ARBEITSKATEGORIEN[a.kategorie]?.icon}</span><span className="text-gray-800 text-sm">{a.arbeit}</span></div>
                 <div className="flex items-center gap-2"><RatingStars value={a.bewertung} readOnly size="small" />{a.verbessert && <span className="text-emerald-400">📈</span>}</div>
               </div>
             ))}
@@ -1279,10 +1279,10 @@ const RapportForm = ({ lernender, rapporte, onSave }) => {
       )}
       
       <Card>
-        <h2 className="text-lg font-semibold text-stone-100 mb-4">Geübte Kompetenzen</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Geübte Kompetenzen</h2>
         <div className="flex flex-wrap gap-2">
           {KOMPETENZEN.map((komp) => (
-            <button key={komp.id} onClick={() => toggleKompetenz(komp.id)} className={`px-3 py-1.5 rounded-full text-sm transition-all ${selectedKompetenzen.includes(komp.id) ? 'bg-amber-500 text-stone-900' : 'bg-stone-700/50 text-stone-300 hover:bg-stone-700'}`}>
+            <button key={komp.id} onClick={() => toggleKompetenz(komp.id)} className={`px-3 py-1.5 rounded-full text-sm transition-all ${selectedKompetenzen.includes(komp.id) ? 'bg-blue-500 text-stone-900' : 'bg-gray-100/50 text-gray-700 hover:bg-gray-100'}`}>
               {komp.icon} {komp.name}
             </button>
           ))}
@@ -1290,8 +1290,8 @@ const RapportForm = ({ lernender, rapporte, onSave }) => {
       </Card>
       
       <Card>
-        <h2 className="text-lg font-semibold text-stone-100 mb-4">Notizen</h2>
-        <textarea value={notizen} onChange={(e) => setNotizen(e.target.value)} placeholder="Was war heute besonders?" className="w-full h-24 bg-stone-700/30 border border-stone-600 rounded-xl p-4 text-stone-100 placeholder-stone-500 focus:border-amber-500 focus:outline-none resize-none" />
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Notizen</h2>
+        <textarea value={notizen} onChange={(e) => setNotizen(e.target.value)} placeholder="Was war heute besonders?" className="w-full h-24 bg-gray-100/30 border border-gray-300 rounded-xl p-4 text-gray-900 placeholder-stone-500 focus:border-blue-500 focus:outline-none resize-none" />
       </Card>
       
       <div className="flex justify-end gap-4">
@@ -1377,16 +1377,16 @@ const LernendenDashboard = ({ lernender, rapporte, berufsbildner, monatsBewertun
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div><h1 className="text-2xl font-bold text-stone-100">Dashboard</h1><p className="text-stone-400">Dein Ausbildungsfortschritt</p></div>
+        <div><h1 className="text-2xl font-bold text-gray-900">Dashboard</h1><p className="text-gray-600">Dein Ausbildungsfortschritt</p></div>
         <Select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} options={[{ value: 'all', label: 'Alle Monate' }, ...availableMonths.map(m => ({ value: m, label: formatMonth(m + '-01') }))]} />
       </div>
       
       {/* Statistik-Karten */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card><p className="text-stone-400 text-sm">Rapporte</p><p className="text-3xl font-bold text-stone-100 mt-1">{meineRapporte.length}</p></Card>
-        <Card><p className="text-stone-400 text-sm">Diese Woche</p><p className="text-3xl font-bold text-amber-400 mt-1">{meineRapporte.filter(r => (new Date() - new Date(r.datum)) / 86400000 <= 7).length}</p></Card>
-        <Card><p className="text-stone-400 text-sm">Ø Selbstbewertung</p><p className="text-3xl font-bold text-emerald-400 mt-1">{gefilterteRapporte.length > 0 ? (gefilterteRapporte.flatMap(r => r.arbeiten || []).reduce((sum, a) => sum + (a.bewertung || 0), 0) / Math.max(1, gefilterteRapporte.flatMap(r => r.arbeiten || []).length)).toFixed(1) : '-'}</p></Card>
-        <Card><p className="text-stone-400 text-sm">Verbesserungen</p><p className="text-3xl font-bold text-blue-400 mt-1">{gefilterteRapporte.flatMap(r => r.arbeiten || []).filter(a => a.verbessert).length}</p></Card>
+        <Card><p className="text-gray-600 text-sm">Rapporte</p><p className="text-3xl font-bold text-gray-900 mt-1">{meineRapporte.length}</p></Card>
+        <Card><p className="text-gray-600 text-sm">Diese Woche</p><p className="text-3xl font-bold text-blue-400 mt-1">{meineRapporte.filter(r => (new Date() - new Date(r.datum)) / 86400000 <= 7).length}</p></Card>
+        <Card><p className="text-gray-600 text-sm">Ø Selbstbewertung</p><p className="text-3xl font-bold text-emerald-400 mt-1">{gefilterteRapporte.length > 0 ? (gefilterteRapporte.flatMap(r => r.arbeiten || []).reduce((sum, a) => sum + (a.bewertung || 0), 0) / Math.max(1, gefilterteRapporte.flatMap(r => r.arbeiten || []).length)).toFixed(1) : '-'}</p></Card>
+        <Card><p className="text-gray-600 text-sm">Verbesserungen</p><p className="text-3xl font-bold text-blue-400 mt-1">{gefilterteRapporte.flatMap(r => r.arbeiten || []).filter(a => a.verbessert).length}</p></Card>
       </div>
       
       {/* Monatsbewertung */}
@@ -1394,17 +1394,17 @@ const LernendenDashboard = ({ lernender, rapporte, berufsbildner, monatsBewertun
         <Card className="border-blue-500/30 bg-blue-500/5">
           <h2 className="text-lg font-semibold text-blue-400 mb-2">📋 Monatsbewertung {formatMonth(letzteBewertung.monat + '-01')}</h2>
           <div className="flex items-center gap-4 mb-3"><RatingStars value={letzteBewertung.gesamtbewertung} readOnly /></div>
-          {letzteBewertung.kommentar && <p className="text-stone-300 bg-stone-800/50 p-3 rounded-lg">{letzteBewertung.kommentar}</p>}
-          <p className="text-stone-500 text-sm mt-2">— {letzteBewertung.berufsbildnerName}</p>
+          {letzteBewertung.kommentar && <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{letzteBewertung.kommentar}</p>}
+          <p className="text-gray-500 text-sm mt-2">— {letzteBewertung.berufsbildnerName}</p>
         </Card>
       )}
       
       {/* Zeitlicher Verlauf - Grafik */}
       {zeitVerlauf.length > 1 && (
         <Card>
-          <h2 className="text-lg font-semibold text-stone-100 mb-4">📈 Entwicklung über Zeit</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">📈 Entwicklung über Zeit</h2>
           <div className="mb-4 flex gap-4 text-xs">
-            <span className="flex items-center gap-1"><span className="w-3 h-3 bg-amber-500 rounded"></span> Arbeiten</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 bg-blue-500 rounded"></span> Arbeiten</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 bg-emerald-500 rounded"></span> Ø Bewertung</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 bg-blue-500 rounded"></span> Kompetenzen</span>
           </div>
@@ -1412,12 +1412,12 @@ const LernendenDashboard = ({ lernender, rapporte, berufsbildner, monatsBewertun
             {zeitVerlauf.map((item, i) => (
               <div key={i} className="flex-1 flex flex-col items-center">
                 <div className="w-full flex gap-1 items-end justify-center h-36">
-                  <div className="w-4 bg-amber-500/80 rounded-t transition-all" style={{ height: `${(item.arbeiten / maxArbeiten) * 100}%` }} title={`${item.arbeiten} Arbeiten`} />
+                  <div className="w-4 bg-blue-500/80 rounded-t transition-all" style={{ height: `${(item.arbeiten / maxArbeiten) * 100}%` }} title={`${item.arbeiten} Arbeiten`} />
                   <div className="w-4 bg-emerald-500/80 rounded-t transition-all" style={{ height: `${(item.avgBewertung / 5) * 100}%` }} title={`Ø ${item.avgBewertung.toFixed(1)}`} />
                   <div className="w-4 bg-blue-500/80 rounded-t transition-all" style={{ height: `${(item.kompetenzen / 10) * 100}%` }} title={`${item.kompetenzen} Kompetenzen`} />
                 </div>
-                <span className="text-xs text-stone-400 mt-2">{item.label}</span>
-                <span className="text-xs text-stone-500">{item.rapporte}R</span>
+                <span className="text-xs text-gray-600 mt-2">{item.label}</span>
+                <span className="text-xs text-gray-500">{item.rapporte}R</span>
               </div>
             ))}
           </div>
@@ -1427,30 +1427,30 @@ const LernendenDashboard = ({ lernender, rapporte, berufsbildner, monatsBewertun
       {/* Alle Arbeitskategorien */}
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-stone-100">🏗️ Alle Arbeitskategorien</h2>
-          <button onClick={() => setShowAllKategorien(!showAllKategorien)} className="text-amber-400 text-sm hover:text-amber-300">
+          <h2 className="text-lg font-semibold text-gray-900"><span className="inline-flex items-center gap-2"><img src="/logo.png" className="w-5 h-5" /> Alle Arbeitskategorien</span></h2>
+          <button onClick={() => setShowAllKategorien(!showAllKategorien)} className="text-blue-400 text-sm hover:text-amber-300">
             {showAllKategorien ? '← Weniger' : 'Alle anzeigen →'}
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {(showAllKategorien ? kategorieStats : kategorieStats.slice(0, 6)).map(kat => (
-            <div key={kat.kategorie} className="p-3 bg-stone-700/20 rounded-xl">
+            <div key={kat.kategorie} className="p-3 bg-gray-100/20 rounded-xl">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-stone-200 text-sm font-medium">{kat.icon} {kat.name}</span>
+                <span className="text-gray-800 text-sm font-medium">{kat.icon} {kat.name}</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-amber-400 text-xs">{kat.count}× geübt</span>
+                  <span className="text-blue-400 text-xs">{kat.count}× geübt</span>
                   {kat.verbesserungen > 0 && <span className="text-emerald-400 text-xs">📈 {kat.verbesserungen}</span>}
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-stone-500 w-16">Selbst:</span>
+                  <span className="text-xs text-gray-500 w-16">Selbst:</span>
                   <div className="flex-1"><ProgressBar value={kat.avgSelbst} color="amber" /></div>
-                  <span className="text-xs text-amber-400 w-8">{kat.avgSelbst.toFixed(1)}</span>
+                  <span className="text-xs text-blue-400 w-8">{kat.avgSelbst.toFixed(1)}</span>
                 </div>
                 {kat.avgBB !== null && (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-stone-500 w-16">BB:</span>
+                    <span className="text-xs text-gray-500 w-16">BB:</span>
                     <div className="flex-1"><ProgressBar value={kat.avgBB} color="blue" /></div>
                     <span className="text-xs text-blue-400 w-8">{kat.avgBB.toFixed(1)}</span>
                   </div>
@@ -1459,14 +1459,14 @@ const LernendenDashboard = ({ lernender, rapporte, berufsbildner, monatsBewertun
             </div>
           ))}
         </div>
-        {kategorieStats.length === 0 && <p className="text-stone-500 text-center py-4">Noch keine Arbeiten erfasst.</p>}
+        {kategorieStats.length === 0 && <p className="text-gray-500 text-center py-4">Noch keine Arbeiten erfasst.</p>}
       </Card>
       
       {/* Alle Kompetenzen */}
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-stone-100">💪 Alle Kompetenzen</h2>
-          <button onClick={() => setShowAllKompetenzen(!showAllKompetenzen)} className="text-amber-400 text-sm hover:text-amber-300">
+          <h2 className="text-lg font-semibold text-gray-900">💪 Alle Kompetenzen</h2>
+          <button onClick={() => setShowAllKompetenzen(!showAllKompetenzen)} className="text-blue-400 text-sm hover:text-amber-300">
             {showAllKompetenzen ? '← Weniger' : 'Alle anzeigen →'}
           </button>
         </div>
@@ -1475,13 +1475,13 @@ const LernendenDashboard = ({ lernender, rapporte, berufsbildner, monatsBewertun
             const count = kompetenzStats[komp.id] || 0;
             const maxCount = Math.max(...Object.values(kompetenzStats), 1);
             return (
-              <div key={komp.id} className={`p-3 rounded-xl text-center transition-all ${count > 0 ? 'bg-stone-700/30' : 'bg-stone-800/30 opacity-50'}`}>
+              <div key={komp.id} className={`p-3 rounded-xl text-center transition-all ${count > 0 ? 'bg-gray-100/30' : 'bg-white/30 opacity-50'}`}>
                 <span className="text-2xl">{komp.icon}</span>
-                <p className="text-xs text-stone-300 mt-1">{komp.name}</p>
-                <div className="mt-2 h-1 bg-stone-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-500 transition-all" style={{ width: `${(count / maxCount) * 100}%` }} />
+                <p className="text-xs text-gray-700 mt-1">{komp.name}</p>
+                <div className="mt-2 h-1 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 transition-all" style={{ width: `${(count / maxCount) * 100}%` }} />
                 </div>
-                <p className="text-xs text-amber-400 mt-1">{count}×</p>
+                <p className="text-xs text-blue-400 mt-1">{count}×</p>
               </div>
             );
           })}
@@ -1491,10 +1491,10 @@ const LernendenDashboard = ({ lernender, rapporte, berufsbildner, monatsBewertun
       {/* Berufsbildner/in */}
       {berufsbildner && (
         <Card>
-          <h2 className="text-lg font-semibold text-stone-100 mb-4">👨‍🏫 Dein/e Berufsbildner/in</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">👨‍🏫 Dein/e Berufsbildner/in</h2>
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-stone-700 rounded-full flex items-center justify-center text-2xl">👷</div>
-            <div><p className="text-stone-100 font-medium">{berufsbildner.name}</p><p className="text-stone-400">{berufsbildner.firma}</p></div>
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-2xl">👷</div>
+            <div><p className="text-gray-900 font-medium">{berufsbildner.name}</p><p className="text-gray-600">{berufsbildner.firma}</p></div>
           </div>
         </Card>
       )}
@@ -1508,13 +1508,13 @@ const LernendenVerlauf = ({ lernender, rapporte }) => {
   
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
-      <div><h1 className="text-2xl font-bold text-stone-100">Verlauf</h1><p className="text-stone-400">Alle deine Rapporte</p></div>
-      {meineRapporte.length === 0 ? <Card><p className="text-stone-400 text-center py-8">Noch keine Rapporte.</p></Card> : (
+      <div><h1 className="text-2xl font-bold text-gray-900">Verlauf</h1><p className="text-gray-600">Alle deine Rapporte</p></div>
+      {meineRapporte.length === 0 ? <Card><p className="text-gray-600 text-center py-8">Noch keine Rapporte.</p></Card> : (
         <div className="space-y-4">
           {meineRapporte.map(rapport => (
-            <Card key={rapport.id} onClick={() => setSelectedRapport(rapport)} className="hover:border-amber-500/30">
+            <Card key={rapport.id} onClick={() => setSelectedRapport(rapport)} className="hover:border-blue-500/30">
               <div className="flex items-start justify-between">
-                <div><p className="text-stone-100 font-medium">{formatDate(rapport.datum)}</p><p className="text-stone-400 text-sm mt-1">{rapport.arbeiten?.length || 0} Arbeiten</p></div>
+                <div><p className="text-gray-900 font-medium">{formatDate(rapport.datum)}</p><p className="text-gray-600 text-sm mt-1">{rapport.arbeiten?.length || 0} Arbeiten</p></div>
                 <RatingStars value={rapport.arbeiten?.length > 0 ? rapport.arbeiten.reduce((s, a) => s + (a.bewertung || 0), 0) / rapport.arbeiten.length : 0} readOnly size="small" />
               </div>
             </Card>
@@ -1526,13 +1526,13 @@ const LernendenVerlauf = ({ lernender, rapporte }) => {
           <div className="space-y-4">
             <div className="space-y-2">
               {selectedRapport.arbeiten?.map((a, i) => (
-                <div key={i} className="flex items-center justify-between p-2 bg-stone-700/30 rounded-lg">
-                  <span className="text-stone-200 text-sm">{ARBEITSKATEGORIEN[a.kategorie]?.icon} {a.arbeit}</span>
+                <div key={i} className="flex items-center justify-between p-2 bg-gray-100/30 rounded-lg">
+                  <span className="text-gray-800 text-sm">{ARBEITSKATEGORIEN[a.kategorie]?.icon} {a.arbeit}</span>
                   <div className="flex items-center gap-2"><RatingStars value={a.bewertung} readOnly size="small" />{a.verbessert && <span>📈</span>}</div>
                 </div>
               ))}
             </div>
-            {selectedRapport.notizen && <p className="text-stone-300 bg-stone-700/30 p-3 rounded-lg">{selectedRapport.notizen}</p>}
+            {selectedRapport.notizen && <p className="text-gray-700 bg-gray-100/30 p-3 rounded-lg">{selectedRapport.notizen}</p>}
           </div>
         )}
       </Modal>
@@ -1601,8 +1601,8 @@ const LernendenNotizen = ({ lernender, rapporte }) => {
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-100">Meine Notizen</h1>
-          <p className="text-stone-400">Alle deine Notizen auf einen Blick</p>
+          <h1 className="text-2xl font-bold text-gray-900">Meine Notizen</h1>
+          <p className="text-gray-600">Alle deine Notizen auf einen Blick</p>
         </div>
         {rapporteMitNotizen.length > 0 && (
           <Button variant="secondary" size="small" onClick={handlePrint}>
@@ -1613,8 +1613,8 @@ const LernendenNotizen = ({ lernender, rapporte }) => {
       
       {rapporteMitNotizen.length === 0 ? (
         <Card>
-          <p className="text-stone-400 text-center py-8">Noch keine Notizen vorhanden.</p>
-          <p className="text-stone-500 text-center text-sm">Notizen kannst du beim Erstellen eines Rapports hinzufügen.</p>
+          <p className="text-gray-600 text-center py-8">Noch keine Notizen vorhanden.</p>
+          <p className="text-gray-500 text-center text-sm">Notizen kannst du beim Erstellen eines Rapports hinzufügen.</p>
         </Card>
       ) : (
         <div className="space-y-3">
@@ -1626,35 +1626,35 @@ const LernendenNotizen = ({ lernender, rapporte }) => {
               <Card key={rapport.id} className="overflow-hidden">
                 <button
                   onClick={() => setExpandedNotiz(isExpanded ? null : rapport.id)}
-                  className="w-full flex items-center justify-between text-left hover:bg-stone-700/20 -m-6 p-6 rounded-xl transition-colors"
+                  className="w-full flex items-center justify-between text-left hover:bg-gray-100/20 -m-6 p-6 rounded-xl transition-colors"
                 >
                   <div className="flex-1">
-                    <p className="text-stone-100 font-medium">{formatDate(rapport.datum)}</p>
-                    <p className="text-stone-400 text-sm mt-1">
+                    <p className="text-gray-900 font-medium">{formatDate(rapport.datum)}</p>
+                    <p className="text-gray-600 text-sm mt-1">
                       {arbeitsAnzahl} Arbeiten • {rapport.notizen.length} Zeichen
                     </p>
                   </div>
-                  <span className="text-stone-400 text-xl">{isExpanded ? '▼' : '▶'}</span>
+                  <span className="text-gray-600 text-xl">{isExpanded ? '▼' : '▶'}</span>
                 </button>
                 
                 {isExpanded && (
-                  <div className="pt-4 mt-4 border-t border-stone-600/50">
+                  <div className="pt-4 mt-4 border-t border-gray-300/50">
                     {/* Notizen */}
                     <div className="mb-4">
-                      <p className="text-stone-400 text-sm mb-2">📝 Notiz:</p>
-                      <div className="bg-stone-800/50 p-4 rounded-lg">
-                        <p className="text-stone-200 whitespace-pre-wrap">{rapport.notizen}</p>
+                      <p className="text-gray-600 text-sm mb-2">📝 Notiz:</p>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-gray-800 whitespace-pre-wrap">{rapport.notizen}</p>
                       </div>
                     </div>
                     
                     {/* Arbeiten */}
                     {rapport.arbeiten && rapport.arbeiten.length > 0 && (
                       <div>
-                        <p className="text-stone-400 text-sm mb-2">🏗️ Arbeiten an diesem Tag:</p>
+                        <p className="text-gray-600 text-sm mb-2">Arbeiten an diesem Tag:</p>
                         <div className="space-y-2">
                           {rapport.arbeiten.map((a, i) => (
-                            <div key={i} className="flex items-center justify-between p-2 bg-stone-700/30 rounded-lg">
-                              <span className="text-stone-300 text-sm">
+                            <div key={i} className="flex items-center justify-between p-2 bg-gray-100/30 rounded-lg">
+                              <span className="text-gray-700 text-sm">
                                 {ARBEITSKATEGORIEN[a.kategorie]?.icon} {a.arbeit}
                               </span>
                               <RatingStars value={a.bewertung} readOnly size="small" />
@@ -1675,11 +1675,11 @@ const LernendenNotizen = ({ lernender, rapporte }) => {
       {rapporteMitNotizen.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
-            <p className="text-stone-400 text-sm">Notizen gesamt</p>
-            <p className="text-3xl font-bold text-amber-400 mt-1">{rapporteMitNotizen.length}</p>
+            <p className="text-gray-600 text-sm">Notizen gesamt</p>
+            <p className="text-3xl font-bold text-blue-400 mt-1">{rapporteMitNotizen.length}</p>
           </Card>
           <Card>
-            <p className="text-stone-400 text-sm">Dieser Monat</p>
+            <p className="text-gray-600 text-sm">Dieser Monat</p>
             <p className="text-3xl font-bold text-emerald-400 mt-1">
               {rapporteMitNotizen.filter(r => {
                 const rapportMonth = getMonthKey(r.datum);
@@ -1689,14 +1689,14 @@ const LernendenNotizen = ({ lernender, rapporte }) => {
             </p>
           </Card>
           <Card>
-            <p className="text-stone-400 text-sm">Ø Zeichen</p>
+            <p className="text-gray-600 text-sm">Ø Zeichen</p>
             <p className="text-3xl font-bold text-blue-400 mt-1">
               {Math.round(rapporteMitNotizen.reduce((sum, r) => sum + r.notizen.length, 0) / rapporteMitNotizen.length)}
             </p>
           </Card>
           <Card>
-            <p className="text-stone-400 text-sm">Letzte Notiz</p>
-            <p className="text-lg font-bold text-stone-100 mt-1">
+            <p className="text-gray-600 text-sm">Letzte Notiz</p>
+            <p className="text-lg font-bold text-gray-900 mt-1">
               {formatDateShort(rapporteMitNotizen[0].datum)}
             </p>
           </Card>
@@ -1709,7 +1709,7 @@ const LernendenNotizen = ({ lernender, rapporte }) => {
 const LernendenBereich = ({ lernender, rapporte, berufsbildner, monatsBewertungen, onLogout, onRefresh }) => {
   const [currentView, setCurrentView] = useState('rapport');
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <LernendenNav currentView={currentView} onNavigate={setCurrentView} onLogout={onLogout} userName={lernender.name} />
       {currentView === 'rapport' && <RapportForm lernender={lernender} rapporte={rapporte} onSave={onRefresh} />}
       {currentView === 'dashboard' && <LernendenDashboard lernender={lernender} rapporte={rapporte} berufsbildner={berufsbildner} monatsBewertungen={monatsBewertungen} />}
@@ -1725,20 +1725,20 @@ const LernendenBereich = ({ lernender, rapporte, berufsbildner, monatsBewertunge
 // ============================================================================
 
 const BerufsbildnerNav = ({ currentView, onNavigate, onLogout, userName }) => (
-  <nav className="bg-stone-800/80 backdrop-blur-md border-b border-stone-700 sticky top-0 z-40">
+  <nav className="bg-white backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-40">
     <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <span className="text-2xl">🏗️</span>
-        <span className="font-semibold text-stone-100 hidden sm:block">MauerwerkCheck</span>
+        <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+        <span className="font-semibold text-gray-900 hidden sm:block">Wall-I-Check</span>
         <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-0.5 rounded-full">BB</span>
         <div className="flex gap-1">
           {[{ id: 'lernende', icon: '👷' }, { id: 'bewertungen', icon: '📋' }, { id: 'codes', icon: '🔑' }, { id: 'uebersicht', icon: '📊' }].map(item => (
-            <button key={item.id} onClick={() => onNavigate(item.id)} className={`px-3 py-2 rounded-lg transition-all ${currentView === item.id ? 'bg-blue-500/20 text-blue-400' : 'text-stone-400 hover:text-stone-100'}`}>{item.icon}</button>
+            <button key={item.id} onClick={() => onNavigate(item.id)} className={`px-3 py-2 rounded-lg transition-all ${currentView === item.id ? 'bg-blue-500/20 text-blue-400' : 'text-gray-600 hover:text-gray-900'}`}>{item.icon}</button>
           ))}
         </div>
       </div>
       <div className="flex items-center gap-4">
-        <span className="text-stone-400 text-sm hidden sm:block">👨‍🏫 {userName}</span>
+        <span className="text-gray-600 text-sm hidden sm:block">👨‍🏫 {userName}</span>
         <Button variant="ghost" size="small" onClick={onLogout}>Abmelden</Button>
       </div>
     </div>
@@ -1857,22 +1857,22 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
   
   // Farben für Kreisdiagramm
   const chartColors = [
-    'bg-amber-500', 'bg-blue-500', 'bg-emerald-500', 'bg-purple-500', 
+    'bg-blue-500', 'bg-blue-500', 'bg-emerald-500', 'bg-purple-500', 
     'bg-pink-500', 'bg-cyan-500', 'bg-orange-500', 'bg-lime-500',
     'bg-indigo-500', 'bg-rose-500', 'bg-teal-500', 'bg-yellow-500'
   ];
   
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
-      <div><h1 className="text-2xl font-bold text-stone-100">Meine Lernenden</h1><p className="text-stone-400">{meineLernende.length} Lernende/r</p></div>
-      {meineLernende.length === 0 ? <Card><p className="text-stone-400 text-center py-8">Noch keine Lernenden. Erstelle einen Code unter "🔑".</p></Card> : (
+      <div><h1 className="text-2xl font-bold text-gray-900">Meine Lernenden</h1><p className="text-gray-600">{meineLernende.length} Lernende/r</p></div>
+      {meineLernende.length === 0 ? <Card><p className="text-gray-600 text-center py-8">Noch keine Lernenden. Erstelle einen Code unter "🔑".</p></Card> : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {meineLernende.map(l => {
             const lernRapporte = rapporte.filter(r => r.lernenderId === l.id);
             return (
               <Card key={l.id} onClick={() => { setSelectedLernender(l); setShowStatistik(false); setSelectedRapport(null); }} className="hover:border-blue-500/30">
-                <div className="flex items-center gap-4"><div className="w-14 h-14 bg-amber-500/20 rounded-full flex items-center justify-center text-2xl">👷</div><div><p className="text-stone-100 font-medium">{l.name}</p><p className="text-stone-400 text-sm">{l.lehrjahr}. Lehrjahr</p></div></div>
-                <div className="mt-4 pt-4 border-t border-stone-700 text-sm"><div className="flex justify-between"><span className="text-stone-400">Rapporte:</span><span className="text-stone-200">{lernRapporte.length}</span></div></div>
+                <div className="flex items-center gap-4"><div className="w-14 h-14 bg-blue-500/20 rounded-full flex items-center justify-center text-2xl">👷</div><div><p className="text-gray-900 font-medium">{l.name}</p><p className="text-gray-600 text-sm">{l.lehrjahr}. Lehrjahr</p></div></div>
+                <div className="mt-4 pt-4 border-t border-gray-200 text-sm"><div className="flex justify-between"><span className="text-gray-600">Rapporte:</span><span className="text-gray-800">{lernRapporte.length}</span></div></div>
               </Card>
             );
           })}
@@ -1881,18 +1881,18 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
       <Modal isOpen={!!selectedLernender} onClose={() => { setSelectedLernender(null); setSelectedRapport(null); setShowStatistik(false); }} title={selectedLernender?.name || ''} size="large">
         {selectedLernender && !selectedRapport && !showStatistik && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-stone-700/30 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-gray-100/30 rounded-xl">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center text-3xl">👷</div>
-                <div><p className="text-stone-100 font-medium">{selectedLernender.name}</p><p className="text-stone-400">Code: {selectedLernender.code}</p></div>
+                <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center text-3xl">👷</div>
+                <div><p className="text-gray-900 font-medium">{selectedLernender.name}</p><p className="text-gray-600">Code: {selectedLernender.code}</p></div>
               </div>
               <Button variant="secondary" onClick={() => setShowStatistik(true)}>📊 Statistik</Button>
             </div>
-            <h3 className="text-stone-400 text-sm">Rapporte</h3>
+            <h3 className="text-gray-600 text-sm">Rapporte</h3>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {rapporte.filter(r => r.lernenderId === selectedLernender.id).sort((a, b) => new Date(b.datum) - new Date(a.datum)).map(rapport => (
-                <button key={rapport.id} onClick={() => setSelectedRapport(rapport)} className="w-full p-3 bg-stone-700/30 rounded-lg text-left hover:bg-stone-700/50">
-                  <div className="flex justify-between items-center"><span className="text-stone-200">{formatDateShort(rapport.datum)}</span><span className="text-stone-400 text-sm">{rapport.arbeiten?.length || 0} Arbeiten</span></div>
+                <button key={rapport.id} onClick={() => setSelectedRapport(rapport)} className="w-full p-3 bg-gray-100/30 rounded-lg text-left hover:bg-gray-100/50">
+                  <div className="flex justify-between items-center"><span className="text-gray-800">{formatDateShort(rapport.datum)}</span><span className="text-gray-600 text-sm">{rapport.arbeiten?.length || 0} Arbeiten</span></div>
                 </button>
               ))}
             </div>
@@ -1910,15 +1910,15 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
         {selectedRapport && (
           <div className="space-y-4">
             <button onClick={() => setSelectedRapport(null)} className="text-blue-400 hover:text-blue-300">← Zurück</button>
-            <h3 className="text-stone-100">{formatDate(selectedRapport.datum)}</h3>
+            <h3 className="text-gray-900">{formatDate(selectedRapport.datum)}</h3>
             <div className="space-y-3">
               {selectedRapport.arbeiten?.map((a, i) => {
                 const bbBewertung = selectedRapport.berufsbildnerBewertungen?.find(b => b.arbeit === a.arbeit);
                 return (
-                  <div key={i} className="p-3 bg-stone-700/30 rounded-lg space-y-2">
-                    <span className="text-stone-200 text-sm">{ARBEITSKATEGORIEN[a.kategorie]?.icon} {a.arbeit}</span>
+                  <div key={i} className="p-3 bg-gray-100/30 rounded-lg space-y-2">
+                    <span className="text-gray-800 text-sm">{ARBEITSKATEGORIEN[a.kategorie]?.icon} {a.arbeit}</span>
                     <div className="flex items-center gap-4">
-                      <div><p className="text-stone-500 text-xs">Selbst:</p><RatingStars value={a.bewertung} readOnly size="small" /></div>
+                      <div><p className="text-gray-500 text-xs">Selbst:</p><RatingStars value={a.bewertung} readOnly size="small" /></div>
                       <div><p className="text-blue-400 text-xs">Deine Bewertung:</p><RatingStars value={bbBewertung?.bewertung || 0} onChange={(v) => addBewertung(selectedRapport.id, a, v)} size="small" /></div>
                     </div>
                   </div>
@@ -1926,8 +1926,8 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
               })}
             </div>
             <div className="space-y-2">
-              <h4 className="text-stone-400 text-sm">Kommentar</h4>
-              <textarea value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Feedback..." className="w-full h-24 bg-stone-700/30 border border-stone-600 rounded-xl p-3 text-stone-100 placeholder-stone-500 focus:border-blue-500 focus:outline-none resize-none" />
+              <h4 className="text-gray-600 text-sm">Kommentar</h4>
+              <textarea value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Feedback..." className="w-full h-24 bg-gray-100/30 border border-gray-300 rounded-xl p-3 text-gray-900 placeholder-stone-500 focus:border-blue-500 focus:outline-none resize-none" />
               <Button variant="primary" onClick={() => addComment(selectedRapport.id)} disabled={!commentText.trim() || saving}>{saving ? '...' : 'Senden'}</Button>
             </div>
           </div>
@@ -1983,7 +1983,7 @@ const BerufsbildnerBewertungen = ({ berufsbildner, lernende, rapporte, monatsBew
   
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
-      <div><h1 className="text-2xl font-bold text-stone-100">Monatsbewertungen</h1><p className="text-stone-400">Monatliche Rückmeldung</p></div>
+      <div><h1 className="text-2xl font-bold text-gray-900">Monatsbewertungen</h1><p className="text-gray-600">Monatliche Rückmeldung</p></div>
       <div className="grid md:grid-cols-2 gap-4">
         <Select label="Lernende/r" value={selectedLernender?.id || ''} onChange={(e) => setSelectedLernender(meineLernende.find(l => l.id === e.target.value) || null)} options={[{ value: '', label: '-- Wählen --' }, ...meineLernende.map(l => ({ value: l.id, label: l.name }))]} />
         <Select label="Monat" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} options={months.map(m => ({ value: m, label: formatMonth(m + '-01') }))} />
@@ -1992,20 +1992,20 @@ const BerufsbildnerBewertungen = ({ berufsbildner, lernende, rapporte, monatsBew
         <>
           {stats ? (
             <Card>
-              <h2 className="text-lg font-semibold text-stone-100 mb-4">📊 Statistik {formatMonth(selectedMonth + '-01')}</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Statistik {formatMonth(selectedMonth + '-01')}</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div><p className="text-stone-400 text-sm">Rapporte</p><p className="text-2xl font-bold text-stone-100">{stats.rapportCount}</p></div>
-                <div><p className="text-stone-400 text-sm">Arbeiten</p><p className="text-2xl font-bold text-amber-400">{stats.arbeitenCount}</p></div>
-                <div><p className="text-stone-400 text-sm">Ø Selbst</p><p className="text-2xl font-bold text-emerald-400">{stats.avgSelbst.toFixed(1)}</p></div>
-                <div><p className="text-stone-400 text-sm">Verbesserungen</p><p className="text-2xl font-bold text-blue-400">{stats.verbesserungen}</p></div>
+                <div><p className="text-gray-600 text-sm">Rapporte</p><p className="text-2xl font-bold text-gray-900">{stats.rapportCount}</p></div>
+                <div><p className="text-gray-600 text-sm">Arbeiten</p><p className="text-2xl font-bold text-blue-400">{stats.arbeitenCount}</p></div>
+                <div><p className="text-gray-600 text-sm">Ø Selbst</p><p className="text-2xl font-bold text-emerald-400">{stats.avgSelbst.toFixed(1)}</p></div>
+                <div><p className="text-gray-600 text-sm">Verbesserungen</p><p className="text-2xl font-bold text-blue-400">{stats.verbesserungen}</p></div>
               </div>
             </Card>
-          ) : <Card><p className="text-stone-400 text-center py-4">Keine Rapporte in diesem Monat.</p></Card>}
+          ) : <Card><p className="text-gray-600 text-center py-4">Keine Rapporte in diesem Monat.</p></Card>}
           <Card>
-            <h2 className="text-lg font-semibold text-stone-100 mb-4">📋 Bewertung {existingBewertung && <span className="text-emerald-400 text-sm ml-2">✓ Vorhanden</span>}</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">📋 Bewertung {existingBewertung && <span className="text-emerald-400 text-sm ml-2">✓ Vorhanden</span>}</h2>
             <div className="space-y-4">
-              <div><label className="text-sm text-stone-400 block mb-2">Gesamtbewertung</label><RatingStars value={gesamtbewertung} onChange={setGesamtbewertung} /></div>
-              <div><label className="text-sm text-stone-400 block mb-2">Kommentar</label><textarea value={kommentar} onChange={(e) => setKommentar(e.target.value)} placeholder="Was lief gut? Was kann verbessert werden?" className="w-full h-32 bg-stone-700/30 border border-stone-600 rounded-xl p-4 text-stone-100 placeholder-stone-500 focus:border-blue-500 focus:outline-none resize-none" /></div>
+              <div><label className="text-sm text-gray-600 block mb-2">Gesamtbewertung</label><RatingStars value={gesamtbewertung} onChange={setGesamtbewertung} /></div>
+              <div><label className="text-sm text-gray-600 block mb-2">Kommentar</label><textarea value={kommentar} onChange={(e) => setKommentar(e.target.value)} placeholder="Was lief gut? Was kann verbessert werden?" className="w-full h-32 bg-gray-100/30 border border-gray-300 rounded-xl p-4 text-gray-900 placeholder-stone-500 focus:border-blue-500 focus:outline-none resize-none" /></div>
               <Button variant="primary" onClick={saveBewertung} disabled={saving}>{saving ? '...' : existingBewertung ? 'Aktualisieren' : 'Speichern'}</Button>
             </div>
           </Card>
@@ -2064,24 +2064,24 @@ const BerufsbildnerCodes = ({ berufsbildner, lernende, onRefresh }) => {
   
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
-      <div><h1 className="text-2xl font-bold text-stone-100">Zugangscodes</h1><p className="text-stone-400">Codes für neue Lernende erstellen und aktivieren</p></div>
+      <div><h1 className="text-2xl font-bold text-gray-900">Zugangscodes</h1><p className="text-gray-600">Codes für neue Lernende erstellen und aktivieren</p></div>
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-stone-100">Neuer Code</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Neuer Code</h2>
           <Button variant="primary" onClick={createCode} disabled={saving}>{saving ? '...' : '+ Neu'}</Button>
         </div>
-        {newCode && <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl mb-4"><p className="text-emerald-400 mb-2">Erstellt!</p><p className="text-3xl font-mono font-bold text-stone-100">{newCode}</p><p className="text-stone-400 text-sm mt-2">Gib diesen Code an den/die Lernende/n weiter und aktiviere ihn unten mit dem Namen.</p></div>}
+        {newCode && <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl mb-4"><p className="text-emerald-400 mb-2">Erstellt!</p><p className="text-3xl font-mono font-bold text-gray-900">{newCode}</p><p className="text-gray-600 text-sm mt-2">Gib diesen Code an den/die Lernende/n weiter und aktiviere ihn unten mit dem Namen.</p></div>}
         <div className="space-y-2">
           {(berufsbildner.codes || []).map(code => {
             const l = lernende.find(x => x.code === code);
             return (
-              <div key={code} className="flex items-center justify-between p-3 bg-stone-700/30 rounded-xl">
+              <div key={code} className="flex items-center justify-between p-3 bg-gray-100/30 rounded-xl">
                 <div>
-                  <span className="font-mono text-lg text-stone-100">{code}</span>
+                  <span className="font-mono text-lg text-gray-900">{code}</span>
                   {l ? (
-                    <span className="ml-3 text-stone-400 text-sm">→ {l.name} ({l.lehrjahr}. Lehrjahr)</span>
+                    <span className="ml-3 text-gray-600 text-sm">→ {l.name} ({l.lehrjahr}. Lehrjahr)</span>
                   ) : (
-                    <span className="ml-3 text-amber-400 text-sm">⚠️ Nicht aktiviert</span>
+                    <span className="ml-3 text-blue-400 text-sm">⚠️ Nicht aktiviert</span>
                   )}
                 </div>
                 {l ? (
@@ -2101,11 +2101,11 @@ const BerufsbildnerCodes = ({ berufsbildner, lernende, onRefresh }) => {
       {/* Aktivierungs-Modal */}
       <Modal isOpen={!!activatingCode} onClose={() => { setActivatingCode(null); setLernenderName(''); setLehrjahr(1); }} title={`Code aktivieren: ${activatingCode}`}>
         <div className="space-y-4">
-          <p className="text-stone-400 text-sm">Gib den Namen und das Lehrjahr des/der Lernenden ein, um den Account zu erstellen:</p>
+          <p className="text-gray-600 text-sm">Gib den Namen und das Lehrjahr des/der Lernenden ein, um den Account zu erstellen:</p>
           <Input label="Name des/der Lernenden" placeholder="Vor- und Nachname" value={lernenderName} onChange={(e) => setLernenderName(e.target.value)} />
           <div>
-            <label className="text-sm text-stone-400 block mb-2">Lehrjahr</label>
-            <select value={lehrjahr} onChange={(e) => setLehrjahr(e.target.value)} className="w-full bg-stone-800/50 border border-stone-600 rounded-xl px-4 py-3 text-stone-100 focus:border-amber-500 focus:outline-none">
+            <label className="text-sm text-gray-600 block mb-2">Lehrjahr</label>
+            <select value={lehrjahr} onChange={(e) => setLehrjahr(e.target.value)} className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none">
               <option value="1">1. Lehrjahr</option>
               <option value="2">2. Lehrjahr</option>
               <option value="3">3. Lehrjahr</option>
@@ -2126,19 +2126,19 @@ const BerufsbildnerUebersicht = ({ berufsbildner, lernende, rapporte }) => {
   const meineRapporte = rapporte.filter(r => meineLernende.some(l => l.id === r.lernenderId));
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
-      <h1 className="text-2xl font-bold text-stone-100">Übersicht</h1>
+      <h1 className="text-2xl font-bold text-gray-900">Übersicht</h1>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card><p className="text-stone-400 text-sm">Lernende</p><p className="text-3xl font-bold text-stone-100 mt-1">{meineLernende.length}</p></Card>
-        <Card><p className="text-stone-400 text-sm">Rapporte</p><p className="text-3xl font-bold text-blue-400 mt-1">{meineRapporte.length}</p></Card>
-        <Card><p className="text-stone-400 text-sm">Diese Woche</p><p className="text-3xl font-bold text-emerald-400 mt-1">{meineRapporte.filter(r => (new Date() - new Date(r.datum)) / 86400000 <= 7).length}</p></Card>
-        <Card><p className="text-stone-400 text-sm">Zu bewerten</p><p className="text-3xl font-bold text-amber-400 mt-1">{meineRapporte.filter(r => !r.berufsbildnerBewertungen?.length).length}</p></Card>
+        <Card><p className="text-gray-600 text-sm">Lernende</p><p className="text-3xl font-bold text-gray-900 mt-1">{meineLernende.length}</p></Card>
+        <Card><p className="text-gray-600 text-sm">Rapporte</p><p className="text-3xl font-bold text-blue-400 mt-1">{meineRapporte.length}</p></Card>
+        <Card><p className="text-gray-600 text-sm">Diese Woche</p><p className="text-3xl font-bold text-emerald-400 mt-1">{meineRapporte.filter(r => (new Date() - new Date(r.datum)) / 86400000 <= 7).length}</p></Card>
+        <Card><p className="text-gray-600 text-sm">Zu bewerten</p><p className="text-3xl font-bold text-blue-400 mt-1">{meineRapporte.filter(r => !r.berufsbildnerBewertungen?.length).length}</p></Card>
       </div>
       <Card>
-        <h2 className="text-lg font-semibold text-stone-100 mb-4">Aktivität (7 Tage)</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Aktivität (7 Tage)</h2>
         <div className="space-y-3">
           {meineLernende.map(l => {
             const count = meineRapporte.filter(r => r.lernenderId === l.id && (new Date() - new Date(r.datum)) / 86400000 <= 7).length;
-            return <div key={l.id} className="flex items-center gap-4"><div className="w-28 text-stone-300 truncate">{l.name}</div><div className="flex-1"><ProgressBar value={count} max={7} color="blue" /></div><span className="text-stone-400 text-sm w-12 text-right">{count}/7</span></div>;
+            return <div key={l.id} className="flex items-center gap-4"><div className="w-28 text-gray-700 truncate">{l.name}</div><div className="flex-1"><ProgressBar value={count} max={7} color="blue" /></div><span className="text-gray-600 text-sm w-12 text-right">{count}/7</span></div>;
           })}
         </div>
       </Card>
@@ -2149,7 +2149,7 @@ const BerufsbildnerUebersicht = ({ berufsbildner, lernende, rapporte }) => {
 const BerufsbildnerBereich = ({ berufsbildner, lernende, rapporte, monatsBewertungen, onLogout, onRefresh }) => {
   const [currentView, setCurrentView] = useState('lernende');
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <BerufsbildnerNav currentView={currentView} onNavigate={setCurrentView} onLogout={onLogout} userName={berufsbildner.name} />
       {currentView === 'lernende' && <BerufsbildnerLernende berufsbildner={berufsbildner} lernende={lernende} rapporte={rapporte} onRefresh={onRefresh} />}
       {currentView === 'bewertungen' && <BerufsbildnerBewertungen berufsbildner={berufsbildner} lernende={lernende} rapporte={rapporte} monatsBewertungen={monatsBewertungen} onRefresh={onRefresh} />}
@@ -2234,33 +2234,33 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900">
-      <nav className="bg-stone-800/80 backdrop-blur-md border-b border-stone-700 sticky top-0 z-40">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <nav className="bg-white backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2"><span className="text-2xl">🏗️</span><span className="font-semibold text-stone-100">MauerwerkCheck</span><span className="bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded-full">Admin</span></div>
+          <div className="flex items-center gap-2"><img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" /><span className="font-semibold text-gray-900">Wall-I-Check</span><span className="bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded-full">Admin</span></div>
           <Button variant="ghost" size="small" onClick={onLogout}>Abmelden</Button>
         </div>
       </nav>
       <div className="max-w-4xl mx-auto p-4 space-y-6">
-        <div><h1 className="text-2xl font-bold text-stone-100">Admin-Bereich</h1><p className="text-stone-400">Berufsbildner/innen verwalten</p></div>
+        <div><h1 className="text-2xl font-bold text-gray-900">Admin-Bereich</h1><p className="text-gray-600">Berufsbildner/innen verwalten</p></div>
         <Card>
-          <h2 className="text-lg font-semibold text-stone-100 mb-4">Neue/n Berufsbildner/in erstellen</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Neue/n Berufsbildner/in erstellen</h2>
           <div className="grid md:grid-cols-2 gap-4">
             <Input label="Name" value={newBBName} onChange={(e) => setNewBBName(e.target.value)} placeholder="Anna Müller" />
             <Input label="E-Mail" type="email" value={newBBEmail} onChange={(e) => setNewBBEmail(e.target.value)} placeholder="anna@firma.ch" />
             <div className="space-y-2">
-              <label className="text-sm text-stone-400">Passwort</label>
+              <label className="text-sm text-gray-600">Passwort</label>
               <div className="flex gap-2">
                 <input 
                   type="text" 
                   value={newBBPassword} 
                   onChange={(e) => setNewBBPassword(e.target.value)} 
                   placeholder="Mind. 6 Zeichen"
-                  className="flex-1 bg-stone-800/50 border border-stone-600 rounded-xl px-4 py-3 text-stone-100 focus:border-amber-500 focus:outline-none"
+                  className="flex-1 bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none"
                 />
                 <button 
                   onClick={generatePassword}
-                  className="px-4 py-3 bg-stone-700 hover:bg-stone-600 text-stone-300 rounded-xl transition-all"
+                  className="px-4 py-3 bg-gray-100 hover:bg-stone-600 text-gray-700 rounded-xl transition-all"
                   title="Zufälliges Passwort generieren"
                 >
                   🎲
@@ -2272,29 +2272,29 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
           {error && <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl"><p className="text-red-400 text-sm">{error}</p></div>}
           {success && <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl"><p className="text-emerald-400 text-sm whitespace-pre-line">{success}</p></div>}
           <Button variant="primary" className="mt-4" onClick={createBerufsbildner} disabled={!newBBName || !newBBEmail || !newBBPassword || saving}>{saving ? '...' : 'Erstellen'}</Button>
-          <p className="text-stone-500 text-sm mt-2">⚠️ Notiere das Passwort – es kann nicht wiederhergestellt werden!</p>
+          <p className="text-gray-500 text-sm mt-2">⚠️ Notiere das Passwort – es kann nicht wiederhergestellt werden!</p>
         </Card>
         <Card>
-          <h2 className="text-lg font-semibold text-stone-100 mb-4">Berufsbildner/innen ({berufsbildner.length})</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Berufsbildner/innen ({berufsbildner.length})</h2>
           <div className="space-y-3">
             {berufsbildner.map(bb => {
               const meineLernende = lernende.filter(l => l.berufsbildnerId === bb.id);
               const isExpanded = expandedBB === bb.id;
               
               return (
-                <div key={bb.id} className="bg-stone-700/30 rounded-xl overflow-hidden">
+                <div key={bb.id} className="bg-gray-100/30 rounded-xl overflow-hidden">
                   {/* Berufsbildner Header */}
                   <div className="flex items-center justify-between p-4">
                     <button
                       onClick={() => setExpandedBB(isExpanded ? null : bb.id)}
-                      className="flex-1 flex items-center gap-3 text-left hover:bg-stone-700/20 -m-4 p-4 rounded-xl transition-colors"
+                      className="flex-1 flex items-center gap-3 text-left hover:bg-gray-100/20 -m-4 p-4 rounded-xl transition-colors"
                     >
                       <div className="flex-1">
-                        <p className="text-stone-100 font-medium">{bb.name}</p>
-                        <p className="text-stone-400 text-sm">{bb.firma || 'Keine Firma'} • {bb.email}</p>
-                        <p className="text-stone-500 text-sm">{meineLernende.length} Lernende • {(bb.codes || []).length} Codes</p>
+                        <p className="text-gray-900 font-medium">{bb.name}</p>
+                        <p className="text-gray-600 text-sm">{bb.firma || 'Keine Firma'} • {bb.email}</p>
+                        <p className="text-gray-500 text-sm">{meineLernende.length} Lernende • {(bb.codes || []).length} Codes</p>
                       </div>
-                      <span className="text-stone-400">{isExpanded ? '▼' : '▶'}</span>
+                      <span className="text-gray-600">{isExpanded ? '▼' : '▶'}</span>
                     </button>
                     <Button 
                       variant="danger" 
@@ -2309,21 +2309,21 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
                   
                   {/* Lernende Accordion */}
                   {isExpanded && meineLernende.length > 0 && (
-                    <div className="px-4 pb-4 pt-2 border-t border-stone-600/50">
-                      <h3 className="text-sm font-semibold text-stone-300 mb-3">Lernende von {bb.name}:</h3>
+                    <div className="px-4 pb-4 pt-2 border-t border-gray-300/50">
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Lernende von {bb.name}:</h3>
                       <div className="space-y-2">
                         {meineLernende.map(l => {
                           const lernendeRapporte = rapporte.filter(r => r.lernenderId === l.id);
                           return (
                             <div 
                               key={l.id}
-                              className="flex items-center justify-between p-3 bg-stone-800/50 rounded-lg"
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                             >
                               <div className="flex items-center gap-3">
                                 <span className="text-2xl">👷</span>
                                 <div>
-                                  <p className="text-stone-100 font-medium">{l.name}</p>
-                                  <p className="text-stone-400 text-sm">
+                                  <p className="text-gray-900 font-medium">{l.name}</p>
+                                  <p className="text-gray-600 text-sm">
                                     Code: {l.code} · {l.lehrjahr}. Lehrjahr · {lernendeRapporte.length} Rapporte
                                   </p>
                                 </div>
@@ -2336,8 +2336,8 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
                   )}
                   
                   {isExpanded && meineLernende.length === 0 && (
-                    <div className="px-4 pb-4 pt-2 border-t border-stone-600/50">
-                      <p className="text-stone-500 text-center py-3">Noch keine Lernenden</p>
+                    <div className="px-4 pb-4 pt-2 border-t border-gray-300/50">
+                      <p className="text-gray-500 text-center py-3">Noch keine Lernenden</p>
                     </div>
                   )}
                 </div>
@@ -2346,9 +2346,9 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
           </div>
         </Card>
         <div className="grid md:grid-cols-3 gap-4">
-          <Card><p className="text-stone-400 text-sm">Berufsbildner/innen</p><p className="text-3xl font-bold text-stone-100 mt-1">{berufsbildner.length}</p></Card>
-          <Card><p className="text-stone-400 text-sm">Lernende</p><p className="text-3xl font-bold text-amber-400 mt-1">{lernende.length}</p></Card>
-          <Card><p className="text-stone-400 text-sm">Rapporte</p><p className="text-3xl font-bold text-emerald-400 mt-1">{rapporte.length}</p></Card>
+          <Card><p className="text-gray-600 text-sm">Berufsbildner/innen</p><p className="text-3xl font-bold text-gray-900 mt-1">{berufsbildner.length}</p></Card>
+          <Card><p className="text-gray-600 text-sm">Lernende</p><p className="text-3xl font-bold text-blue-400 mt-1">{lernende.length}</p></Card>
+          <Card><p className="text-gray-600 text-sm">Rapporte</p><p className="text-3xl font-bold text-emerald-400 mt-1">{rapporte.length}</p></Card>
         </div>
       </div>
     </div>
@@ -2418,7 +2418,7 @@ export default function App() {
     localStorage.removeItem('maurercheck_session');
   };
   
-  if (loading) return <div className="min-h-screen bg-stone-900 flex items-center justify-center"><LoadingSpinner /></div>;
+  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><LoadingSpinner /></div>;
   if (!session) return <LoginScreen onLogin={handleLogin} />;
   
   if (session.type === 'admin') return <AdminBereich berufsbildner={berufsbildner} lernende={lernende} rapporte={rapporte} onLogout={handleLogout} onRefresh={loadData} />;
