@@ -398,6 +398,149 @@ const StatistikView = ({ rapporte, lernenderId }) => {
     '#6366f1', '#f43f5e', '#14b8a6', '#eab308'
   ];
   
+  // PDF Druck-Funktion
+  const handlePrint = () => {
+    const lernender = rapporte.find(r => r.lernenderId === lernenderId);
+    const zeitFilterText = zeitFilter === 'woche' ? 'Letzte 7 Tage' : zeitFilter === 'monat' ? 'Letzter Monat' : 'Letztes Jahr';
+    
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Erweiterte Statistik</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; padding: 20px; }
+          h1 { color: #111827; border-bottom: 3px solid #3B82F6; padding-bottom: 10px; margin-bottom: 10px; }
+          .meta { background: #F3F4F6; padding: 15px; border-radius: 8px; margin-bottom: 30px; }
+          .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+          .stat-card { background: #F9FAFB; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid #E5E7EB; }
+          .stat-label { font-size: 12px; color: #6B7280; margin-bottom: 5px; }
+          .stat-value { font-size: 28px; font-weight: bold; color: #3B82F6; }
+          .section { margin-bottom: 40px; page-break-inside: avoid; }
+          .section-title { font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #E5E7EB; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          th, td { padding: 10px; text-align: left; border-bottom: 1px solid #E5E7EB; }
+          th { background: #F3F4F6; font-weight: bold; color: #374151; }
+          .stars { color: #FBBF24; }
+          @media print { 
+            body { margin: 20px; }
+            .section { page-break-inside: avoid; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>📊 Erweiterte Statistik</h1>
+        <div class="meta">
+          <p><strong>Zeitraum:</strong> ${zeitFilterText}</p>
+          <p><strong>Erstellt:</strong> ${new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Rapporte</div>
+            <div class="stat-value">${gefilterteRapporte.length}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Arbeiten</div>
+            <div class="stat-value">${totalArbeiten}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Ø Bewertung</div>
+            <div class="stat-value">${avgBewertung.toFixed(1)}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Kategorien</div>
+            <div class="stat-value">${Object.keys(arbeitsStats).length}</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">🏗️ Arbeitskategorien</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Kategorie</th>
+                <th>Anzahl</th>
+                <th>Ø Bewertung</th>
+                <th>Verbesserungen</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Object.entries(arbeitsStats).map(([key, stats]) => {
+                const kategorie = ARBEITSKATEGORIEN[key];
+                const avg = stats.count > 0 ? stats.totalBewertung / stats.count : 0;
+                return `
+                  <tr>
+                    <td>${kategorie?.icon || ''} ${kategorie?.name || key}</td>
+                    <td>${stats.count}x</td>
+                    <td><span class="stars">${'⭐'.repeat(Math.round(avg))}</span> ${avg.toFixed(1)}</td>
+                    <td>${stats.verbesserungen > 0 ? `📈 ${stats.verbesserungen}x` : '-'}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="section-title">💡 Kompetenzen</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Kompetenz</th>
+                <th>Häufigkeit</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Object.entries(kompetenzStats).map(([key, stats]) => {
+                const kompetenz = KOMPETENZEN.find(k => k.id === key);
+                return `
+                  <tr>
+                    <td>${kompetenz?.icon || ''} ${kompetenz?.name || key}</td>
+                    <td>${stats.count}x</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        ${entwicklung.wenigKategorien.length > 0 ? `
+          <div class="section">
+            <div class="section-title">🎯 Entwicklungspotenzial - Kategorien</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Kategorie</th>
+                  <th>Anzahl</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${entwicklung.wenigKategorien.map(kat => `
+                  <tr>
+                    <td>${kat.icon} ${kat.name}</td>
+                    <td>${kat.count}x</td>
+                    <td>${kat.count === 0 ? '❌ Noch nicht geübt' : '⚠️ Wenig geübt'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -409,13 +552,16 @@ const StatistikView = ({ rapporte, lernenderId }) => {
               onClick={() => setZeitFilter(filter)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 zeitFilter === filter
-                  ? 'bg-blue-500 text-stone-900'
-                  : 'bg-gray-100 text-gray-700 hover:bg-stone-600'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               {filter === 'woche' ? 'Woche' : filter === 'monat' ? 'Monat' : 'Jahr'}
             </button>
           ))}
+          <Button variant="secondary" size="small" onClick={handlePrint}>
+            🖨️ PDF
+          </Button>
         </div>
       </div>
       
@@ -2030,9 +2176,119 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
     'bg-indigo-500', 'bg-rose-500', 'bg-teal-500', 'bg-yellow-500'
   ];
   
+  // PDF Druck-Funktion für alle Lernenden
+  const handlePrintAll = () => {
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Lernenden-Übersicht - ${berufsbildner.name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; padding: 20px; }
+          h1 { color: #111827; border-bottom: 3px solid #3B82F6; padding-bottom: 10px; margin-bottom: 10px; }
+          .meta { background: #F3F4F6; padding: 15px; border-radius: 8px; margin-bottom: 30px; }
+          .lernende-card { background: #F9FAFB; padding: 20px; margin-bottom: 20px; border-radius: 8px; border-left: 4px solid #3B82F6; page-break-inside: avoid; }
+          .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; }
+          .stat { background: white; padding: 10px; border-radius: 4px; text-align: center; border: 1px solid #E5E7EB; }
+          .stat-label { font-size: 11px; color: #6B7280; }
+          .stat-value { font-size: 20px; font-weight: bold; color: #3B82F6; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th, td { padding: 8px; text-align: left; border-bottom: 1px solid #E5E7EB; font-size: 13px; }
+          th { background: #F3F4F6; font-weight: bold; }
+          @media print { body { margin: 20px; } }
+        </style>
+      </head>
+      <body>
+        <h1>📊 Lernenden-Übersicht</h1>
+        <div class="meta">
+          <p><strong>Berufsbildner/in:</strong> ${berufsbildner.name}</p>
+          <p><strong>Firma:</strong> ${berufsbildner.firma || 'Nicht angegeben'}</p>
+          <p><strong>Anzahl Lernende:</strong> ${meineLernende.length}</p>
+          <p><strong>Erstellt:</strong> ${new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+
+        ${meineLernende.map(l => {
+          const lernRapporte = rapporte.filter(r => r.lernenderId === l.id);
+          const letzte7Tage = lernRapporte.filter(r => (new Date() - new Date(r.datum)) / 86400000 <= 7).length;
+          const letzter30Tage = lernRapporte.filter(r => (new Date() - new Date(r.datum)) / 86400000 <= 30).length;
+          const alleArbeiten = lernRapporte.flatMap(r => r.arbeiten || []);
+          const avgBewertung = alleArbeiten.length > 0 ? (alleArbeiten.reduce((sum, a) => sum + (a.bewertung || 0), 0) / alleArbeiten.length).toFixed(1) : '-';
+          const letzteRapporte = lernRapporte.sort((a, b) => new Date(b.datum) - new Date(a.datum)).slice(0, 5);
+          
+          return `
+            <div class="lernende-card">
+              <h2 style="margin: 0 0 15px 0; color: #111827;">👷 ${l.name}</h2>
+              <p style="color: #6B7280; margin: 5px 0;">Code: ${l.code} • ${l.lehrjahr}. Lehrjahr</p>
+              
+              <div class="stats-grid">
+                <div class="stat">
+                  <div class="stat-label">Rapporte</div>
+                  <div class="stat-value">${lernRapporte.length}</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-label">7 Tage</div>
+                  <div class="stat-value">${letzte7Tage}</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-label">30 Tage</div>
+                  <div class="stat-value">${letzter30Tage}</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-label">Ø Bew.</div>
+                  <div class="stat-value">${avgBewertung}</div>
+                </div>
+              </div>
+              
+              ${letzteRapporte.length > 0 ? `
+                <h3 style="font-size: 14px; margin: 15px 0 10px 0; color: #374151;">Letzte Rapporte</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Datum</th>
+                      <th>Arbeiten</th>
+                      <th>Kompetenzen</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${letzteRapporte.map(r => `
+                      <tr>
+                        <td>${formatDate(r.datum)}</td>
+                        <td>${r.arbeiten?.length || 0}</td>
+                        <td>${r.kompetenzen?.length || 0}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              ` : '<p style="color: #6B7280; margin-top: 15px;">Noch keine Rapporte</p>'}
+            </div>
+          `;
+        }).join('')}
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  };
+  
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
-      <div><h1 className="text-2xl font-bold text-gray-900">Meine Lernenden</h1><p className="text-gray-600">{meineLernende.length} Lernende/r</p></div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Meine Lernenden</h1>
+          <p className="text-gray-600">{meineLernende.length} Lernende/r</p>
+        </div>
+        {meineLernende.length > 0 && (
+          <Button variant="secondary" size="small" onClick={handlePrintAll}>
+            🖨️ PDF
+          </Button>
+        )}
+      </div>
       {meineLernende.length === 0 ? <Card><p className="text-gray-600 text-center py-8">Noch keine Lernenden. Erstelle einen Code unter "🔑".</p></Card> : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {meineLernende.map(l => {
@@ -2149,9 +2405,92 @@ const BerufsbildnerBewertungen = ({ berufsbildner, lernende, rapporte, monatsBew
   
   const stats = getMonthStats();
   
+  // PDF Druck-Funktion für Bewertungsübersicht
+  const handlePrintBewertungen = () => {
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Monatsbewertungen - ${berufsbildner.name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; padding: 20px; }
+          h1 { color: #111827; border-bottom: 3px solid #3B82F6; padding-bottom: 10px; margin-bottom: 10px; }
+          .meta { background: #F3F4F6; padding: 15px; border-radius: 8px; margin-bottom: 30px; }
+          .bewertung-card { background: #F9FAFB; padding: 20px; margin-bottom: 20px; border-radius: 8px; border-left: 4px solid #3B82F6; page-break-inside: avoid; }
+          .stars { color: #FBBF24; font-size: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th, td { padding: 8px; text-align: left; border-bottom: 1px solid #E5E7EB; }
+          th { background: #F3F4F6; font-weight: bold; }
+          @media print { body { margin: 20px; } }
+        </style>
+      </head>
+      <body>
+        <h1>📋 Monatsbewertungen</h1>
+        <div class="meta">
+          <p><strong>Berufsbildner/in:</strong> ${berufsbildner.name}</p>
+          <p><strong>Erstellt:</strong> ${new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+
+        ${meineLernende.map(l => {
+          const lernBewertungen = monatsBewertungen
+            .filter(b => b.lernenderId === l.id)
+            .sort((a, b) => b.monat.localeCompare(a.monat))
+            .slice(0, 6);
+          
+          return `
+            <div class="bewertung-card">
+              <h2 style="margin: 0 0 15px 0; color: #111827;">👷 ${l.name}</h2>
+              <p style="color: #6B7280; margin: 5px 0 15px 0;">${l.lehrjahr}. Lehrjahr</p>
+              
+              ${lernBewertungen.length > 0 ? `
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Monat</th>
+                      <th>Bewertung</th>
+                      <th>Kommentar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${lernBewertungen.map(b => `
+                      <tr>
+                        <td>${formatMonth(b.monat + '-01')}</td>
+                        <td><span class="stars">${'⭐'.repeat(b.gesamtbewertung)}</span></td>
+                        <td>${b.kommentar || '-'}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              ` : '<p style="color: #6B7280;">Noch keine Bewertungen</p>'}
+            </div>
+          `;
+        }).join('')}
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  };
+  
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
-      <div><h1 className="text-2xl font-bold text-gray-900">Monatsbewertungen</h1><p className="text-gray-600">Monatliche Rückmeldung</p></div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Monatsbewertungen</h1>
+          <p className="text-gray-600">Monatliche Rückmeldung</p>
+        </div>
+        {meineLernende.length > 0 && (
+          <Button variant="secondary" size="small" onClick={handlePrintBewertungen}>
+            🖨️ PDF
+          </Button>
+        )}
+      </div>
       <div className="grid md:grid-cols-2 gap-4">
         <Select label="Lernende/r" value={selectedLernender?.id || ''} onChange={(e) => setSelectedLernender(meineLernende.find(l => l.id === e.target.value) || null)} options={[{ value: '', label: '-- Wählen --' }, ...meineLernende.map(l => ({ value: l.id, label: l.name }))]} />
         <Select label="Monat" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} options={months.map(m => ({ value: m, label: formatMonth(m + '-01') }))} />
@@ -2500,11 +2839,100 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
   const [deleting, setDeleting] = useState(null);
   const [expandedBB, setExpandedBB] = useState(null);
   
+  // Lernenden-Verwaltung
+  const [newLernName, setNewLernName] = useState('');
+  const [newLernCode, setNewLernCode] = useState('');
+  const [newLernLehrjahr, setNewLernLehrjahr] = useState('1');
+  const [newLernBBId, setNewLernBBId] = useState('');
+  const [savingLern, setSavingLern] = useState(false);
+  const [successLern, setSuccessLern] = useState('');
+  const [errorLern, setErrorLern] = useState('');
+  const [deletingLern, setDeletingLern] = useState(null);
+  const [editingLern, setEditingLern] = useState(null);
+  
   const generatePassword = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
     let pw = '';
     for (let i = 0; i < 10; i++) pw += chars.charAt(Math.floor(Math.random() * chars.length));
     setNewBBPassword(pw);
+  };
+  
+  const generateCode = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+    setNewLernCode(code);
+  };
+  
+  const createLernender = async () => {
+    if (!newLernName || !newLernCode || !newLernBBId) {
+      setErrorLern('Bitte alle Felder ausfüllen');
+      return;
+    }
+    
+    // Prüfe ob Code schon existiert
+    const codeExists = lernende.some(l => l.code === newLernCode);
+    if (codeExists) {
+      setErrorLern('Dieser Code existiert bereits!');
+      return;
+    }
+    
+    setSavingLern(true); setSuccessLern(''); setErrorLern('');
+    try {
+      await addDoc(collection(db, 'lernende'), {
+        name: newLernName,
+        code: newLernCode,
+        lehrjahr: parseInt(newLernLehrjahr),
+        berufsbildnerId: newLernBBId,
+        authCreated: false,
+        createdAt: new Date().toISOString()
+      });
+      
+      const bb = berufsbildner.find(b => b.id === newLernBBId);
+      setSuccessLern(`✅ "${newLernName}" erstellt und ${bb?.name || 'Berufsbildner/in'} zugewiesen!\n\n📋 Code: ${newLernCode}\n🎓 Lehrjahr: ${newLernLehrjahr}`);
+      setNewLernName(''); setNewLernCode(''); setNewLernLehrjahr('1'); setNewLernBBId('');
+      onRefresh?.();
+    } catch (err) {
+      console.error(err);
+      setErrorLern('Fehler beim Erstellen: ' + err.message);
+    } finally {
+      setSavingLern(false);
+    }
+  };
+  
+  const deleteLernender = async (id) => {
+    const lernendeRapporte = rapporte.filter(r => r.lernenderId === id);
+    if (lernendeRapporte.length > 0) {
+      alert(`⚠️ Lernende/r hat noch ${lernendeRapporte.length} Rapporte!\n\nBitte zuerst alle Rapporte löschen.`);
+      return;
+    }
+    
+    const lern = lernende.find(l => l.id === id);
+    if (!window.confirm(`Wirklich "${lern?.name}" löschen?`)) return;
+    
+    setDeletingLern(id);
+    try {
+      await deleteDoc(doc(db, 'lernende', id));
+      onRefresh?.();
+    } catch (err) {
+      console.error(err);
+      alert('Fehler beim Löschen');
+    } finally {
+      setDeletingLern(null);
+    }
+  };
+  
+  const changeLernenderBB = async (lernId, newBBId) => {
+    try {
+      await updateDoc(doc(db, 'lernende', lernId), {
+        berufsbildnerId: newBBId
+      });
+      setEditingLern(null);
+      onRefresh?.();
+    } catch (err) {
+      console.error(err);
+      alert('Fehler beim Zuweisen');
+    }
   };
   
   const createBerufsbildner = async () => {
@@ -2671,6 +3099,129 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
             })}
           </div>
         </Card>
+        
+        {/* Lernenden-Verwaltung */}
+        <Card>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Neue/n Lernende/n erstellen</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Input label="Name" value={newLernName} onChange={(e) => setNewLernName(e.target.value)} placeholder="Max Müller" />
+            <div className="space-y-2">
+              <label className="text-sm text-gray-600">Code</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={newLernCode} 
+                  onChange={(e) => setNewLernCode(e.target.value.toUpperCase())} 
+                  placeholder="ABC123"
+                  className="flex-1 bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none"
+                  maxLength={6}
+                />
+                <button 
+                  onClick={generateCode}
+                  className="px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl transition-all"
+                  title="Zufälligen Code generieren"
+                >
+                  🎲
+                </button>
+              </div>
+            </div>
+            <Select 
+              label="Lehrjahr" 
+              value={newLernLehrjahr} 
+              onChange={(e) => setNewLernLehrjahr(e.target.value)}
+              options={[
+                { value: '1', label: '1. Lehrjahr' },
+                { value: '2', label: '2. Lehrjahr' },
+                { value: '3', label: '3. Lehrjahr' },
+                { value: '4', label: '4. Lehrjahr' }
+              ]}
+            />
+            <Select 
+              label="Berufsbildner/in" 
+              value={newLernBBId} 
+              onChange={(e) => setNewLernBBId(e.target.value)}
+              options={[
+                { value: '', label: 'Bitte wählen...' },
+                ...berufsbildner.map(bb => ({ value: bb.id, label: `${bb.name} (${bb.firma || 'Keine Firma'})` }))
+              ]}
+            />
+          </div>
+          {errorLern && <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl"><p className="text-red-400 text-sm">{errorLern}</p></div>}
+          {successLern && <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl"><p className="text-emerald-400 text-sm whitespace-pre-line">{successLern}</p></div>}
+          <Button variant="primary" className="mt-4" onClick={createLernender} disabled={!newLernName || !newLernCode || !newLernBBId || savingLern}>
+            {savingLern ? '...' : 'Lernende/n erstellen'}
+          </Button>
+        </Card>
+        
+        {/* Lernenden-Liste */}
+        <Card>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Alle Lernenden ({lernende.length})</h2>
+          {lernende.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">Noch keine Lernenden erstellt.</p>
+          ) : (
+            <div className="space-y-3">
+              {lernende.map(l => {
+                const bb = berufsbildner.find(b => b.id === l.berufsbildnerId);
+                const lernendeRapporte = rapporte.filter(r => r.lernenderId === l.id);
+                const isEditing = editingLern === l.id;
+                
+                return (
+                  <div key={l.id} className="p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-gray-900 font-medium">👷 {l.name}</p>
+                        <p className="text-gray-600 text-sm">Code: {l.code} • {l.lehrjahr}. Lehrjahr • {lernendeRapporte.length} Rapporte</p>
+                        {isEditing ? (
+                          <div className="mt-3 flex gap-2">
+                            <select
+                              className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900"
+                              defaultValue={l.berufsbildnerId}
+                              onChange={(e) => changeLernenderBB(l.id, e.target.value)}
+                            >
+                              {berufsbildner.map(bb => (
+                                <option key={bb.id} value={bb.id}>
+                                  {bb.name} ({bb.firma || 'Keine Firma'})
+                                </option>
+                              ))}
+                            </select>
+                            <Button variant="ghost" size="small" onClick={() => setEditingLern(null)}>
+                              Abbrechen
+                            </Button>
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-sm mt-1">
+                            Berufsbildner/in: {bb?.name || '❌ Nicht zugewiesen'}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        {!isEditing && (
+                          <Button 
+                            variant="secondary" 
+                            size="small" 
+                            onClick={() => setEditingLern(l.id)}
+                          >
+                            Umziehen
+                          </Button>
+                        )}
+                        <Button 
+                          variant="danger" 
+                          size="small" 
+                          onClick={() => deleteLernender(l.id)} 
+                          disabled={lernendeRapporte.length > 0 || deletingLern === l.id}
+                          title={lernendeRapporte.length > 0 ? 'Hat noch Rapporte!' : 'Löschen'}
+                        >
+                          {deletingLern === l.id ? '...' : 'Löschen'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+        
         <div className="grid md:grid-cols-3 gap-4">
           <Card><p className="text-gray-600 text-sm">Berufsbildner/innen</p><p className="text-3xl font-bold text-gray-900 mt-1">{berufsbildner.length}</p></Card>
           <Card><p className="text-gray-600 text-sm">Lernende</p><p className="text-3xl font-bold text-blue-400 mt-1">{lernende.length}</p></Card>
