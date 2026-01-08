@@ -1374,11 +1374,179 @@ const LernendenDashboard = ({ lernender, rapporte, berufsbildner, monatsBewertun
   const letzteBewertung = meineBewertungen.sort((a, b) => b.monat?.localeCompare(a.monat))[0];
   const maxArbeiten = Math.max(...zeitVerlauf.map(z => z.arbeiten), 1);
   
+  // PDF Druck-Funktion
+  const handlePrint = () => {
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Dashboard - ${lernender.name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; padding: 20px; }
+          h1 { color: #111827; border-bottom: 3px solid #3B82F6; padding-bottom: 10px; margin-bottom: 10px; }
+          .meta { background: #F3F4F6; padding: 15px; border-radius: 8px; margin-bottom: 30px; }
+          .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+          .stat-card { background: #F9FAFB; padding: 15px; border-radius: 8px; text-align: center; }
+          .stat-label { font-size: 12px; color: #6B7280; margin-bottom: 5px; }
+          .stat-value { font-size: 28px; font-weight: bold; color: #3B82F6; }
+          .section { margin-bottom: 40px; page-break-inside: avoid; }
+          .section-title { font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #E5E7EB; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          th, td { padding: 10px; text-align: left; border-bottom: 1px solid #E5E7EB; }
+          th { background: #F3F4F6; font-weight: bold; color: #374151; }
+          .progress-bar { background: #E5E7EB; height: 20px; border-radius: 4px; overflow: hidden; }
+          .progress-fill { background: #3B82F6; height: 100%; transition: width 0.3s; }
+          .stars { color: #FBBF24; }
+          @media print { 
+            .no-print { display: none; } 
+            body { margin: 20px; }
+            .section { page-break-inside: avoid; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>📊 Dashboard - ${lernender.name}</h1>
+        <div class="meta">
+          <p><strong>Name:</strong> ${lernender.name}</p>
+          <p><strong>Lehrjahr:</strong> ${lernender.lehrjahr}</p>
+          <p><strong>Berufsbildner/in:</strong> ${berufsbildner?.name || 'Nicht zugewiesen'}</p>
+          <p><strong>Zeitraum:</strong> ${selectedMonth === 'all' ? 'Alle Monate' : formatMonth(selectedMonth + '-01')}</p>
+          <p><strong>Erstellt:</strong> ${new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Rapporte</div>
+            <div class="stat-value">${meineRapporte.length}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Diese Woche</div>
+            <div class="stat-value">${meineRapporte.filter(r => (new Date() - new Date(r.datum)) / 86400000 <= 7).length}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Ø Selbstbewertung</div>
+            <div class="stat-value">${gefilterteRapporte.length > 0 ? (gefilterteRapporte.flatMap(r => r.arbeiten || []).reduce((sum, a) => sum + (a.bewertung || 0), 0) / Math.max(1, gefilterteRapporte.flatMap(r => r.arbeiten || []).length)).toFixed(1) : '-'}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Verbesserungen</div>
+            <div class="stat-value">${gefilterteRapporte.flatMap(r => r.arbeiten || []).filter(a => a.verbessert).length}</div>
+          </div>
+        </div>
+
+        ${letzteBewertung ? `
+          <div class="section">
+            <div class="section-title">📋 Letzte Monatsbewertung</div>
+            <p><strong>Monat:</strong> ${formatMonth(letzteBewertung.monat + '-01')}</p>
+            <p><strong>Bewertung:</strong> <span class="stars">${'⭐'.repeat(letzteBewertung.gesamtbewertung)}</span></p>
+            ${letzteBewertung.kommentar ? `<p><strong>Kommentar:</strong> ${letzteBewertung.kommentar}</p>` : ''}
+            <p><strong>Von:</strong> ${letzteBewertung.berufsbildnerName}</p>
+          </div>
+        ` : ''}
+
+        <div class="section">
+          <div class="section-title">🏗️ Arbeitskategorien</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Kategorie</th>
+                <th>Anzahl</th>
+                <th>Ø Selbst</th>
+                <th>Ø BB</th>
+                <th>Verbesserungen</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${kategorieStats.map(kat => `
+                <tr>
+                  <td>${kat.icon} ${kat.name}</td>
+                  <td>${kat.count}x</td>
+                  <td><span class="stars">${'⭐'.repeat(Math.round(kat.avgSelbst))}</span> ${kat.avgSelbst.toFixed(1)}</td>
+                  <td>${kat.avgBB !== null ? `<span class="stars">${'⭐'.repeat(Math.round(kat.avgBB))}</span> ${kat.avgBB.toFixed(1)}` : '-'}</td>
+                  <td>${kat.verbesserungen > 0 ? `📈 ${kat.verbesserungen}x` : '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="section-title">💡 Kompetenzen</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Kompetenz</th>
+                <th>Häufigkeit</th>
+                <th>Fortschritt</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${kompetenzList.map(komp => {
+                const percent = (komp.count / meineRapporte.length * 100).toFixed(0);
+                return `
+                  <tr>
+                    <td>${komp.icon} ${komp.name}</td>
+                    <td>${komp.count}x</td>
+                    <td>
+                      <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percent}%"></div>
+                      </div>
+                      ${percent}%
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="section-title">📈 Zeitlicher Verlauf (letzte 6 Monate)</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Monat</th>
+                <th>Rapporte</th>
+                <th>Arbeiten</th>
+                <th>Ø Bewertung</th>
+                <th>Kompetenzen</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${zeitVerlauf.map(z => `
+                <tr>
+                  <td>${formatMonth(z.month + '-01')}</td>
+                  <td>${z.rapporte}</td>
+                  <td>${z.arbeiten}</td>
+                  <td><span class="stars">${'⭐'.repeat(Math.round(z.avgBewertung))}</span> ${z.avgBewertung.toFixed(1)}</td>
+                  <td>${z.kompetenzen}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  };
+  
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div><h1 className="text-2xl font-bold text-gray-900">Dashboard</h1><p className="text-gray-600">Dein Ausbildungsfortschritt</p></div>
-        <Select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} options={[{ value: 'all', label: 'Alle Monate' }, ...availableMonths.map(m => ({ value: m, label: formatMonth(m + '-01') }))]} />
+        <div className="flex gap-2">
+          <Select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} options={[{ value: 'all', label: 'Alle Monate' }, ...availableMonths.map(m => ({ value: m, label: formatMonth(m + '-01') }))]} />
+          <Button variant="secondary" size="small" onClick={handlePrint}>
+            🖨️ PDF
+          </Button>
+        </div>
       </div>
       
       {/* Statistik-Karten */}
@@ -2124,9 +2292,167 @@ const BerufsbildnerCodes = ({ berufsbildner, lernende, onRefresh }) => {
 const BerufsbildnerUebersicht = ({ berufsbildner, lernende, rapporte }) => {
   const meineLernende = lernende.filter(l => l.berufsbildnerId === berufsbildner.id);
   const meineRapporte = rapporte.filter(r => meineLernende.some(l => l.id === r.lernenderId));
+  
+  // PDF Druck-Funktion
+  const handlePrint = () => {
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Übersicht - ${berufsbildner.name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; padding: 20px; }
+          h1 { color: #111827; border-bottom: 3px solid #3B82F6; padding-bottom: 10px; margin-bottom: 10px; }
+          .meta { background: #F3F4F6; padding: 15px; border-radius: 8px; margin-bottom: 30px; }
+          .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+          .stat-card { background: #F9FAFB; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid #E5E7EB; }
+          .stat-label { font-size: 12px; color: #6B7280; margin-bottom: 5px; }
+          .stat-value { font-size: 28px; font-weight: bold; color: #3B82F6; }
+          .section { margin-bottom: 40px; page-break-inside: avoid; }
+          .section-title { font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #E5E7EB; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          th, td { padding: 10px; text-align: left; border-bottom: 1px solid #E5E7EB; }
+          th { background: #F3F4F6; font-weight: bold; color: #374151; }
+          .progress-bar { background: #E5E7EB; height: 20px; border-radius: 4px; overflow: hidden; display: inline-block; width: 200px; }
+          .progress-fill { background: #3B82F6; height: 100%; }
+          .highlight { background: #DBEAFE; }
+          @media print { 
+            body { margin: 20px; }
+            .section { page-break-inside: avoid; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>📊 Lernenden-Übersicht</h1>
+        <div class="meta">
+          <p><strong>Berufsbildner/in:</strong> ${berufsbildner.name}</p>
+          <p><strong>Firma:</strong> ${berufsbildner.firma || 'Nicht angegeben'}</p>
+          <p><strong>Erstellt:</strong> ${new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Lernende</div>
+            <div class="stat-value">${meineLernende.length}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Rapporte gesamt</div>
+            <div class="stat-value">${meineRapporte.length}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Diese Woche</div>
+            <div class="stat-value">${meineRapporte.filter(r => (new Date() - new Date(r.datum)) / 86400000 <= 7).length}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Zu bewerten</div>
+            <div class="stat-value">${meineRapporte.filter(r => !r.berufsbildnerBewertungen?.length).length}</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">👷 Aktivität letzte 7 Tage</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Lernende/r</th>
+                <th>Lehrjahr</th>
+                <th>Code</th>
+                <th>Rapporte (7 Tage)</th>
+                <th>Fortschritt</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${meineLernende.map(l => {
+                const count = meineRapporte.filter(r => r.lernenderId === l.id && (new Date() - new Date(r.datum)) / 86400000 <= 7).length;
+                const percent = (count / 7 * 100).toFixed(0);
+                return `
+                  <tr${count === 0 ? ' class="highlight"' : ''}>
+                    <td><strong>${l.name}</strong></td>
+                    <td>${l.lehrjahr}. Lehrjahr</td>
+                    <td>${l.code}</td>
+                    <td>${count} Rapporte</td>
+                    <td>
+                      <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percent}%"></div>
+                      </div>
+                      ${percent}%
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="section-title">📈 Detaillierte Statistiken pro Lernende/r</div>
+          ${meineLernende.map(l => {
+            const lernendeRapporte = meineRapporte.filter(r => r.lernenderId === l.id);
+            const letzte7Tage = lernendeRapporte.filter(r => (new Date() - new Date(r.datum)) / 86400000 <= 7).length;
+            const letzter30Tage = lernendeRapporte.filter(r => (new Date() - new Date(r.datum)) / 86400000 <= 30).length;
+            const zuBewerten = lernendeRapporte.filter(r => !r.berufsbildnerBewertungen?.length).length;
+            const alleArbeiten = lernendeRapporte.flatMap(r => r.arbeiten || []);
+            const avgBewertung = alleArbeiten.length > 0 ? (alleArbeiten.reduce((sum, a) => sum + (a.bewertung || 0), 0) / alleArbeiten.length).toFixed(1) : '-';
+            const letztesRapport = lernendeRapporte.length > 0 ? lernendeRapporte.sort((a, b) => new Date(b.datum) - new Date(a.datum))[0].datum : '-';
+            
+            return `
+              <div style="margin-bottom: 30px; padding: 15px; background: #F9FAFB; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                <h3 style="margin: 0 0 15px 0; color: #111827;">👷 ${l.name} (${l.lehrjahr}. Lehrjahr)</h3>
+                <table style="margin: 0;">
+                  <tr>
+                    <td style="border: none; padding: 5px 10px 5px 0;"><strong>Code:</strong></td>
+                    <td style="border: none; padding: 5px 0;">${l.code}</td>
+                  </tr>
+                  <tr>
+                    <td style="border: none; padding: 5px 10px 5px 0;"><strong>Rapporte gesamt:</strong></td>
+                    <td style="border: none; padding: 5px 0;">${lernendeRapporte.length}</td>
+                  </tr>
+                  <tr>
+                    <td style="border: none; padding: 5px 10px 5px 0;"><strong>Letzte 7 Tage:</strong></td>
+                    <td style="border: none; padding: 5px 0;">${letzte7Tage}</td>
+                  </tr>
+                  <tr>
+                    <td style="border: none; padding: 5px 10px 5px 0;"><strong>Letzte 30 Tage:</strong></td>
+                    <td style="border: none; padding: 5px 0;">${letzter30Tage}</td>
+                  </tr>
+                  <tr>
+                    <td style="border: none; padding: 5px 10px 5px 0;"><strong>Zu bewerten:</strong></td>
+                    <td style="border: none; padding: 5px 0;">${zuBewerten}</td>
+                  </tr>
+                  <tr>
+                    <td style="border: none; padding: 5px 10px 5px 0;"><strong>Ø Selbstbewertung:</strong></td>
+                    <td style="border: none; padding: 5px 0;">${avgBewertung !== '-' ? '⭐'.repeat(Math.round(avgBewertung)) + ' ' + avgBewertung : '-'}</td>
+                  </tr>
+                  <tr>
+                    <td style="border: none; padding: 5px 10px 5px 0;"><strong>Letztes Rapport:</strong></td>
+                    <td style="border: none; padding: 5px 0;">${letztesRapport !== '-' ? formatDate(letztesRapport) : '-'}</td>
+                  </tr>
+                </table>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  };
+  
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Übersicht</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Übersicht</h1>
+        <Button variant="secondary" size="small" onClick={handlePrint}>
+          🖨️ PDF
+        </Button>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card><p className="text-gray-600 text-sm">Lernende</p><p className="text-3xl font-bold text-gray-900 mt-1">{meineLernende.length}</p></Card>
         <Card><p className="text-gray-600 text-sm">Rapporte</p><p className="text-3xl font-bold text-blue-400 mt-1">{meineRapporte.length}</p></Card>
@@ -2410,6 +2736,8 @@ export default function App() {
     const newSession = { type, user };
     setSession(newSession);
     localStorage.setItem('maurercheck_session', JSON.stringify(newSession));
+    // Daten nach Login laden!
+    loadData();
   };
   
   const handleLogout = async () => { 
