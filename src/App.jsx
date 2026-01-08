@@ -418,10 +418,14 @@ const StatistikView = ({ rapporte, lernenderId }) => {
           .stat-value { font-size: 28px; font-weight: bold; color: #3B82F6; }
           .section { margin-bottom: 40px; page-break-inside: avoid; }
           .section-title { font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #E5E7EB; }
+          .subsection-title { font-size: 14px; font-weight: bold; color: #6B7280; margin: 20px 0 10px 0; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-          th, td { padding: 10px; text-align: left; border-bottom: 1px solid #E5E7EB; }
+          th, td { padding: 10px; text-align: left; border-bottom: 1px solid #E5E7EB; font-size: 13px; }
           th { background: #F3F4F6; font-weight: bold; color: #374151; }
           .stars { color: #FBBF24; }
+          .detail-box { background: #F9FAFB; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #3B82F6; }
+          .work-list { list-style: none; padding: 0; }
+          .work-list li { padding: 5px 0; }
           @media print { 
             body { margin: 20px; }
             .section { page-break-inside: avoid; }
@@ -455,7 +459,7 @@ const StatistikView = ({ rapporte, lernenderId }) => {
         </div>
 
         <div class="section">
-          <div class="section-title">🏗️ Arbeitskategorien</div>
+          <div class="section-title">🏗️ Arbeitskategorien - Übersicht</div>
           <table>
             <thead>
               <tr>
@@ -480,6 +484,47 @@ const StatistikView = ({ rapporte, lernenderId }) => {
               }).join('')}
             </tbody>
           </table>
+          
+          <!-- Detaillierte Arbeitskategorien -->
+          <div class="subsection-title">📋 Detaillierte Arbeiten pro Kategorie</div>
+          ${Object.entries(arbeitsStats).map(([katKey, katStats]) => {
+            const kategorie = ARBEITSKATEGORIEN[katKey];
+            const details = getKategorieDetails(katKey);
+            
+            return `
+              <div class="detail-box">
+                <h3 style="margin: 0 0 10px 0; color: #111827;">${kategorie?.icon || ''} ${kategorie?.name || katKey}</h3>
+                
+                ${details.vielGeubt.length > 0 ? `
+                  <p style="margin: 10px 0 5px 0; font-weight: bold; color: #10B981;">✅ Viel geübt (${details.vielGeubt.length})</p>
+                  <ul class="work-list">
+                    ${details.vielGeubt.map(item => `
+                      <li>• ${item.arbeit} - ${item.count}x - <span class="stars">${'⭐'.repeat(Math.round(item.avgBewertung))}</span> ${item.avgBewertung}</li>
+                    `).join('')}
+                  </ul>
+                ` : ''}
+                
+                ${details.wenigGeubt.length > 0 ? `
+                  <p style="margin: 10px 0 5px 0; font-weight: bold; color: #F59E0B;">⚠️ Wenig geübt (${details.wenigGeubt.length})</p>
+                  <ul class="work-list">
+                    ${details.wenigGeubt.map(item => `
+                      <li>• ${item.arbeit} - ${item.count}x - <span class="stars">${'⭐'.repeat(Math.round(item.avgBewertung))}</span> ${item.avgBewertung}</li>
+                    `).join('')}
+                  </ul>
+                ` : ''}
+                
+                ${details.nichtGeubt.length > 0 ? `
+                  <p style="margin: 10px 0 5px 0; font-weight: bold; color: #EF4444;">❌ Noch nicht geübt (${details.nichtGeubt.length})</p>
+                  <ul class="work-list">
+                    ${details.nichtGeubt.slice(0, 5).map(item => `
+                      <li>• ${item.arbeit}</li>
+                    `).join('')}
+                    ${details.nichtGeubt.length > 5 ? `<li>... und ${details.nichtGeubt.length - 5} weitere</li>` : ''}
+                  </ul>
+                ` : ''}
+              </div>
+            `;
+          }).join('')}
         </div>
 
         <div class="section">
@@ -489,15 +534,19 @@ const StatistikView = ({ rapporte, lernenderId }) => {
               <tr>
                 <th>Kompetenz</th>
                 <th>Häufigkeit</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              ${Object.entries(kompetenzStats).map(([key, stats]) => {
-                const kompetenz = KOMPETENZEN.find(k => k.id === key);
+              ${KOMPETENZEN.map(komp => {
+                const details = getKompetenzDetails(komp.id);
+                const statusText = details.status === 'viel' ? '✅ Viel geübt' : details.status === 'wenig' ? '⚠️ Wenig geübt' : '❌ Noch nicht geübt';
+                const statusColor = details.status === 'viel' ? '#10B981' : details.status === 'wenig' ? '#F59E0B' : '#EF4444';
                 return `
                   <tr>
-                    <td>${kompetenz?.icon || ''} ${kompetenz?.name || key}</td>
-                    <td>${stats.count}x</td>
+                    <td>${komp.icon} ${komp.name}</td>
+                    <td>${details.count}x</td>
+                    <td style="color: ${statusColor};">${statusText}</td>
                   </tr>
                 `;
               }).join('')}
@@ -505,15 +554,42 @@ const StatistikView = ({ rapporte, lernenderId }) => {
           </table>
         </div>
 
+        <div class="section">
+          <div class="section-title">📈 Zeitlicher Verlauf</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Monat</th>
+                <th>Rapporte</th>
+                <th>Arbeiten</th>
+                <th>Ø Bewertung</th>
+                <th>Kompetenzen</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${zeitverlauf.map(z => `
+                <tr>
+                  <td>${z.label}</td>
+                  <td>${z.rapporte}</td>
+                  <td>${z.arbeiten}</td>
+                  <td><span class="stars">${'⭐'.repeat(Math.round(z.avgBewertung))}</span> ${z.avgBewertung.toFixed(1)}</td>
+                  <td>${z.kompetenzen}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
         ${entwicklung.wenigKategorien.length > 0 ? `
           <div class="section">
-            <div class="section-title">🎯 Entwicklungspotenzial - Kategorien</div>
+            <div class="section-title">🎯 Entwicklungspotenzial - Top 5 Kategorien</div>
             <table>
               <thead>
                 <tr>
                   <th>Kategorie</th>
                   <th>Anzahl</th>
                   <th>Status</th>
+                  <th>Empfehlung</th>
                 </tr>
               </thead>
               <tbody>
@@ -522,6 +598,31 @@ const StatistikView = ({ rapporte, lernenderId }) => {
                     <td>${kat.icon} ${kat.name}</td>
                     <td>${kat.count}x</td>
                     <td>${kat.count === 0 ? '❌ Noch nicht geübt' : '⚠️ Wenig geübt'}</td>
+                    <td>${kat.count === 0 ? 'Mit dieser Kategorie beginnen' : 'Mehr Übung empfohlen'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+        
+        ${entwicklung.wenigKompetenzen.length > 0 ? `
+          <div class="section">
+            <div class="section-title">🎯 Entwicklungspotenzial - Kompetenzen</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Kompetenz</th>
+                  <th>Anzahl</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${entwicklung.wenigKompetenzen.map(komp => `
+                  <tr>
+                    <td>${komp.icon} ${komp.name}</td>
+                    <td>${komp.count}x</td>
+                    <td>${komp.count === 0 ? '❌ Noch nicht geübt' : '⚠️ Wenig geübt'}</td>
                   </tr>
                 `).join('')}
               </tbody>
