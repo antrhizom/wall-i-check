@@ -2168,7 +2168,6 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
   const [commentText, setCommentText] = useState('');
   const [saving, setSaving] = useState(false);
   const [deletingRapport, setDeletingRapport] = useState(null);
-  const [deletingLernender, setDeletingLernender] = useState(false);
   const meineLernende = lernende.filter(l => l.berufsbildnerId === berufsbildner.id);
   
   const deleteRapport = async (rapportId) => {
@@ -2184,30 +2183,6 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
       alert('Fehler beim Löschen');
     } finally {
       setDeletingRapport(null);
-    }
-  };
-  
-  const deleteLernender = async (lernenderId) => {
-    const lernendeRapporte = rapporte.filter(r => r.lernenderId === lernenderId);
-    const lern = lernende.find(l => l.id === lernenderId);
-    
-    if (lernendeRapporte.length > 0) {
-      alert(`⚠️ "${lern?.name}" hat noch ${lernendeRapporte.length} Rapporte!\n\nBitte zuerst alle Rapporte einzeln löschen.`);
-      return;
-    }
-    
-    if (!window.confirm(`Wirklich "${lern?.name}" dauerhaft löschen?\n\nDieser Lernende wird aus dem System entfernt.`)) return;
-    
-    setDeletingLernender(true);
-    try {
-      await deleteDoc(doc(db, 'lernende', lernenderId));
-      setSelectedLernender(null);
-      onRefresh?.();
-    } catch (err) {
-      console.error(err);
-      alert('Fehler beim Löschen: ' + err.message);
-    } finally {
-      setDeletingLernender(false);
     }
   };
   
@@ -2437,37 +2412,20 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
           {meineLernende.map(l => {
             const lernRapporte = rapporte.filter(r => r.lernenderId === l.id);
             return (
-              <Card key={l.id} className="hover:border-blue-500/30 relative">
-                <div className="cursor-pointer" onClick={() => { setSelectedLernender(l); setShowStatistik(false); setSelectedRapport(null); }}>
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-blue-500/20 rounded-full flex items-center justify-center text-2xl">👷</div>
-                    <div>
-                      <p className="text-gray-900 font-medium">{l.name}</p>
-                      <p className="text-gray-600 text-sm">{l.lehrjahr}. Lehrjahr</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-gray-200 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Rapporte:</span>
-                      <span className="text-gray-800">{lernRapporte.length}</span>
-                    </div>
+              <Card key={l.id} onClick={() => { setSelectedLernender(l); setShowStatistik(false); setSelectedRapport(null); }} className="hover:border-blue-500/30 cursor-pointer">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-blue-500/20 rounded-full flex items-center justify-center text-2xl">👷</div>
+                  <div>
+                    <p className="text-gray-900 font-medium">{l.name}</p>
+                    <p className="text-gray-600 text-sm">{l.lehrjahr}. Lehrjahr</p>
                   </div>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteLernender(l.id);
-                  }}
-                  disabled={deletingLernender || lernRapporte.length > 0}
-                  className={`absolute top-2 right-2 p-2 rounded-lg transition-all ${
-                    lernRapporte.length > 0 
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-                      : 'bg-red-500/10 hover:bg-red-500/20 text-red-600 hover:text-red-700'
-                  }`}
-                  title={lernRapporte.length > 0 ? `Hat noch ${lernRapporte.length} Rapporte - erst Rapporte löschen` : 'Lernende/n löschen'}
-                >
-                  🗑️
-                </button>
+                <div className="mt-4 pt-4 border-t border-gray-200 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Rapporte:</span>
+                    <span className="text-gray-800">{lernRapporte.length}</span>
+                  </div>
+                </div>
               </Card>
             );
           })}
