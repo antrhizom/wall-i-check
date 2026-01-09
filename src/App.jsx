@@ -2437,9 +2437,33 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
           {meineLernende.map(l => {
             const lernRapporte = rapporte.filter(r => r.lernenderId === l.id);
             return (
-              <Card key={l.id} onClick={() => { setSelectedLernender(l); setShowStatistik(false); setSelectedRapport(null); }} className="hover:border-blue-500/30">
-                <div className="flex items-center gap-4"><div className="w-14 h-14 bg-blue-500/20 rounded-full flex items-center justify-center text-2xl">👷</div><div><p className="text-gray-900 font-medium">{l.name}</p><p className="text-gray-600 text-sm">{l.lehrjahr}. Lehrjahr</p></div></div>
-                <div className="mt-4 pt-4 border-t border-gray-200 text-sm"><div className="flex justify-between"><span className="text-gray-600">Rapporte:</span><span className="text-gray-800">{lernRapporte.length}</span></div></div>
+              <Card key={l.id} className="hover:border-blue-500/30 relative">
+                <div className="cursor-pointer" onClick={() => { setSelectedLernender(l); setShowStatistik(false); setSelectedRapport(null); }}>
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-blue-500/20 rounded-full flex items-center justify-center text-2xl">👷</div>
+                    <div>
+                      <p className="text-gray-900 font-medium">{l.name}</p>
+                      <p className="text-gray-600 text-sm">{l.lehrjahr}. Lehrjahr</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-gray-200 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Rapporte:</span>
+                      <span className="text-gray-800">{lernRapporte.length}</span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteLernender(l.id);
+                  }}
+                  disabled={deletingLernender || lernRapporte.length > 0}
+                  className="absolute top-2 right-2 p-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  title={lernRapporte.length > 0 ? `Hat noch ${lernRapporte.length} Rapporte` : 'Lernende/n löschen'}
+                >
+                  🗑️
+                </button>
               </Card>
             );
           })}
@@ -2453,16 +2477,7 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
                 <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center text-3xl">👷</div>
                 <div><p className="text-gray-900 font-medium">{selectedLernender.name}</p><p className="text-gray-600">Code: {selectedLernender.code}</p></div>
               </div>
-              <div className="flex gap-2">
-                <Button variant="secondary" onClick={() => setShowStatistik(true)}>📊 Statistik</Button>
-                <Button 
-                  variant="danger" 
-                  onClick={() => deleteLernender(selectedLernender.id)}
-                  disabled={deletingLernender}
-                >
-                  {deletingLernender ? '...' : '🗑️ Löschen'}
-                </Button>
-              </div>
+              <Button variant="secondary" onClick={() => setShowStatistik(true)}>📊 Statistik</Button>
             </div>
             <h3 className="text-gray-600 text-sm">Rapporte</h3>
             <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -3411,16 +3426,38 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
     finally { setSaving(false); }
   };
   
-  const deleteBerufsbildner = async (id) => {
-    const hatLernende = lernende.some(l => l.berufsbildnerId === id);
-    if (hatLernende) { alert('Hat noch Lernende zugewiesen!'); return; }
-    if (!window.confirm('Wirklich löschen?')) return;
+  const deleteBerufsbildner = async (id, force = false) => {
+    const zugewieseneLernende = lernende.filter(l => l.berufsbildnerId === id);
+    const bb = berufsbildner.find(b => b.id === id);
+    
+    if (zugewieseneLernende.length > 0 && !force) {
+      const forceDelete = window.confirm(
+        `⚠️ WARNUNG: "${bb?.name}" hat noch ${zugewieseneLernende.length} zugewiesene Lernende!\n\n` +
+        `Diese müssen normalerweise zuerst umgezogen werden.\n\n` +
+        `Trotzdem JETZT löschen? (Lernende bleiben ohne BB)`
+      );
+      
+      if (forceDelete) {
+        return deleteBerufsbildner(id, true);
+      }
+      return;
+    }
+    
+    if (!window.confirm(`Wirklich "${bb?.name}" löschen?`)) return;
+    
     setDeleting(id);
     try {
       await deleteDoc(doc(db, 'berufsbildner', id));
       onRefresh?.();
-    } catch (err) { console.error(err); alert('Fehler beim Löschen'); }
-    finally { setDeleting(null); }
+      if (zugewieseneLernende.length > 0) {
+        alert(`⚠️ Berufsbildner/in gelöscht.\n\n${zugewieseneLernende.length} Lernende sind jetzt ohne Berufsbildner/in.`);
+      }
+    } catch (err) { 
+      console.error(err); 
+      alert('Fehler beim Löschen: ' + err.message); 
+    } finally { 
+      setDeleting(null); 
+    }
   };
   
   return (
@@ -3490,8 +3527,9 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
                       variant="danger" 
                       size="small" 
                       onClick={() => deleteBerufsbildner(bb.id)} 
-                      disabled={meineLernende.length > 0 || deleting === bb.id}
+                      disabled={deleting === bb.id}
                       className="ml-4"
+                      title={meineLernende.length > 0 ? `Hat ${meineLernende.length} Lernende - Erzwingen möglich` : 'Löschen'}
                     >
                       {deleting === bb.id ? '...' : 'Löschen'}
                     </Button>
@@ -3644,8 +3682,8 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
                           variant="danger" 
                           size="small" 
                           onClick={() => deleteLernender(l.id)} 
-                          disabled={lernendeRapporte.length > 0 || deletingLern === l.id}
-                          title={lernendeRapporte.length > 0 ? 'Hat noch Rapporte!' : 'Löschen'}
+                          disabled={deletingLern === l.id}
+                          title={lernendeRapporte.length > 0 ? `Hat ${lernendeRapporte.length} Rapporte - Erzwingen möglich` : 'Löschen'}
                         >
                           {deletingLern === l.id ? '...' : 'Löschen'}
                         </Button>
