@@ -2147,7 +2147,7 @@ const BerufsbildnerNav = ({ currentView, onNavigate, onLogout, userName }) => (
         <span className="font-semibold text-gray-900 hidden sm:block">wall-i-check</span>
         <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-0.5 rounded-full">BB</span>
         <div className="flex gap-1">
-          {[{ id: 'lernende', icon: '👷' }, { id: 'bewertungen', icon: '📋' }, { id: 'codes', icon: '🔑' }, { id: 'uebersicht', icon: '📊' }].map(item => (
+          {[{ id: 'lernende', icon: '👷' }, { id: 'bewertungen', icon: '📋' }, { id: 'notizen', icon: '📝' }, { id: 'codes', icon: '🔑' }, { id: 'uebersicht', icon: '📊' }].map(item => (
             <button key={item.id} onClick={() => onNavigate(item.id)} className={`px-3 py-2 rounded-lg transition-all ${currentView === item.id ? 'bg-blue-500/20 text-blue-400' : 'text-gray-600 hover:text-gray-900'}`}>{item.icon}</button>
           ))}
         </div>
@@ -2167,7 +2167,49 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
   const [statistikZeitraum, setStatistikZeitraum] = useState('3'); // Monate
   const [commentText, setCommentText] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deletingRapport, setDeletingRapport] = useState(null);
+  const [deletingLernender, setDeletingLernender] = useState(false);
   const meineLernende = lernende.filter(l => l.berufsbildnerId === berufsbildner.id);
+  
+  const deleteRapport = async (rapportId) => {
+    if (!window.confirm('Rapport wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) return;
+    
+    setDeletingRapport(rapportId);
+    try {
+      await deleteDoc(doc(db, 'rapporte', rapportId));
+      setSelectedRapport(null);
+      onRefresh?.();
+    } catch (err) {
+      console.error(err);
+      alert('Fehler beim Löschen');
+    } finally {
+      setDeletingRapport(null);
+    }
+  };
+  
+  const deleteLernender = async (lernenderId) => {
+    const lernendeRapporte = rapporte.filter(r => r.lernenderId === lernenderId);
+    const lern = lernende.find(l => l.id === lernenderId);
+    
+    if (lernendeRapporte.length > 0) {
+      alert(`⚠️ "${lern?.name}" hat noch ${lernendeRapporte.length} Rapporte!\n\nBitte zuerst alle Rapporte einzeln löschen.`);
+      return;
+    }
+    
+    if (!window.confirm(`Wirklich "${lern?.name}" dauerhaft löschen?\n\nDieser Lernende wird aus dem System entfernt.`)) return;
+    
+    setDeletingLernender(true);
+    try {
+      await deleteDoc(doc(db, 'lernende', lernenderId));
+      setSelectedLernender(null);
+      onRefresh?.();
+    } catch (err) {
+      console.error(err);
+      alert('Fehler beim Löschen: ' + err.message);
+    } finally {
+      setDeletingLernender(false);
+    }
+  };
   
   const addComment = async (rapportId) => {
     if (!commentText.trim()) return;
@@ -2411,14 +2453,33 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
                 <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center text-3xl">👷</div>
                 <div><p className="text-gray-900 font-medium">{selectedLernender.name}</p><p className="text-gray-600">Code: {selectedLernender.code}</p></div>
               </div>
-              <Button variant="secondary" onClick={() => setShowStatistik(true)}>📊 Statistik</Button>
+              <div className="flex gap-2">
+                <Button variant="secondary" onClick={() => setShowStatistik(true)}>📊 Statistik</Button>
+                <Button 
+                  variant="danger" 
+                  onClick={() => deleteLernender(selectedLernender.id)}
+                  disabled={deletingLernender}
+                >
+                  {deletingLernender ? '...' : '🗑️ Löschen'}
+                </Button>
+              </div>
             </div>
             <h3 className="text-gray-600 text-sm">Rapporte</h3>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {rapporte.filter(r => r.lernenderId === selectedLernender.id).sort((a, b) => new Date(b.datum) - new Date(a.datum)).map(rapport => (
-                <button key={rapport.id} onClick={() => setSelectedRapport(rapport)} className="w-full p-3 bg-gray-100/30 rounded-lg text-left hover:bg-gray-100/50">
-                  <div className="flex justify-between items-center"><span className="text-gray-800">{formatDateShort(rapport.datum)}</span><span className="text-gray-600 text-sm">{rapport.arbeiten?.length || 0} Arbeiten</span></div>
-                </button>
+                <div key={rapport.id} className="flex items-center gap-2">
+                  <button onClick={() => setSelectedRapport(rapport)} className="flex-1 p-3 bg-gray-100/30 rounded-lg text-left hover:bg-gray-100/50">
+                    <div className="flex justify-between items-center"><span className="text-gray-800">{formatDateShort(rapport.datum)}</span><span className="text-gray-600 text-sm">{rapport.arbeiten?.length || 0} Arbeiten</span></div>
+                  </button>
+                  <button
+                    onClick={() => deleteRapport(rapport.id)}
+                    disabled={deletingRapport === rapport.id}
+                    className="px-3 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-lg transition-all disabled:opacity-50"
+                    title="Rapport löschen"
+                  >
+                    {deletingRapport === rapport.id ? '...' : '🗑️'}
+                  </button>
+                </div>
               ))}
             </div>
           </div>
@@ -2502,6 +2563,21 @@ const BerufsbildnerBewertungen = ({ berufsbildner, lernende, rapporte, monatsBew
       onRefresh?.(); alert('Gespeichert!');
     } catch (err) { console.error(err); alert('Fehler'); }
     finally { setSaving(false); }
+  };
+  
+  const deleteBewertung = async () => {
+    if (!existingBewertung) return;
+    if (!window.confirm('Bewertung wirklich löschen?')) return;
+    
+    try {
+      await deleteDoc(doc(db, 'monatsbewertungen', existingBewertung.id));
+      setGesamtbewertung(0);
+      setKommentar('');
+      onRefresh?.();
+    } catch (err) {
+      console.error(err);
+      alert('Fehler beim Löschen');
+    }
   };
   
   const stats = getMonthStats();
@@ -2614,7 +2690,12 @@ const BerufsbildnerBewertungen = ({ berufsbildner, lernende, rapporte, monatsBew
             <div className="space-y-4">
               <div><label className="text-sm text-gray-600 block mb-2">Gesamtbewertung</label><RatingStars value={gesamtbewertung} onChange={setGesamtbewertung} /></div>
               <div><label className="text-sm text-gray-600 block mb-2">Kommentar</label><textarea value={kommentar} onChange={(e) => setKommentar(e.target.value)} placeholder="Was lief gut? Was kann verbessert werden?" className="w-full h-32 bg-gray-100/30 border border-gray-300 rounded-xl p-4 text-gray-900 placeholder-stone-500 focus:border-blue-500 focus:outline-none resize-none" /></div>
-              <Button variant="primary" onClick={saveBewertung} disabled={saving}>{saving ? '...' : existingBewertung ? 'Aktualisieren' : 'Speichern'}</Button>
+              <div className="flex gap-2">
+                <Button variant="primary" onClick={saveBewertung} disabled={saving}>{saving ? '...' : existingBewertung ? 'Aktualisieren' : 'Speichern'}</Button>
+                {existingBewertung && (
+                  <Button variant="danger" onClick={deleteBewertung}>Löschen</Button>
+                )}
+              </div>
             </div>
           </Card>
         </>
@@ -2912,6 +2993,247 @@ const BerufsbildnerUebersicht = ({ berufsbildner, lernende, rapporte }) => {
   );
 };
 
+const BerufsbildnerNotizen = ({ berufsbildner, lernende, rapporte }) => {
+  const [selectedLernender, setSelectedLernender] = useState('all');
+  const [searchText, setSearchText] = useState('');
+  
+  const meineLernende = lernende.filter(l => l.berufsbildnerId === berufsbildner.id);
+  const meineRapporte = rapporte.filter(r => meineLernende.some(l => l.id === r.lernenderId));
+  
+  // Alle Notizen sammeln
+  const alleNotizen = meineRapporte
+    .filter(r => r.notizen && r.notizen.trim())
+    .map(r => ({
+      ...r,
+      lernender: lernende.find(l => l.id === r.lernenderId)
+    }))
+    .sort((a, b) => new Date(b.datum) - new Date(a.datum));
+  
+  // Gefilterte Notizen
+  const gefilterteNotizen = alleNotizen.filter(n => {
+    const lernenderMatch = selectedLernender === 'all' || n.lernenderId === selectedLernender;
+    const textMatch = !searchText || 
+      n.notizen.toLowerCase().includes(searchText.toLowerCase()) ||
+      n.lernender?.name.toLowerCase().includes(searchText.toLowerCase());
+    return lernenderMatch && textMatch;
+  });
+  
+  // Statistiken
+  const stats = {
+    total: alleNotizen.length,
+    thisMonth: alleNotizen.filter(n => {
+      const datum = new Date(n.datum);
+      const now = new Date();
+      return datum.getMonth() === now.getMonth() && datum.getFullYear() === now.getFullYear();
+    }).length,
+    avgLength: alleNotizen.length > 0 ? Math.round(alleNotizen.reduce((sum, n) => sum + n.notizen.length, 0) / alleNotizen.length) : 0,
+    perLernender: meineLernende.map(l => ({
+      name: l.name,
+      count: alleNotizen.filter(n => n.lernenderId === l.id).length
+    })).sort((a, b) => b.count - a.count)
+  };
+  
+  // PDF Export
+  const handlePrint = () => {
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Notizen-Auswertung - ${berufsbildner.name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; padding: 20px; }
+          h1 { color: #111827; border-bottom: 3px solid #3B82F6; padding-bottom: 10px; margin-bottom: 10px; }
+          .meta { background: #F3F4F6; padding: 15px; border-radius: 8px; margin-bottom: 30px; }
+          .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+          .stat-card { background: #F9FAFB; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid #E5E7EB; }
+          .stat-label { font-size: 12px; color: #6B7280; margin-bottom: 5px; }
+          .stat-value { font-size: 24px; font-weight: bold; color: #3B82F6; }
+          .notiz-card { background: #F9FAFB; padding: 20px; margin-bottom: 20px; border-radius: 8px; border-left: 4px solid #3B82F6; page-break-inside: avoid; }
+          .notiz-header { display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #E5E7EB; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th, td { padding: 8px; text-align: left; border-bottom: 1px solid #E5E7EB; font-size: 13px; }
+          th { background: #F3F4F6; font-weight: bold; }
+          @media print { body { margin: 20px; } }
+        </style>
+      </head>
+      <body>
+        <h1>📝 Notizen-Auswertung</h1>
+        <div class="meta">
+          <p><strong>Berufsbildner/in:</strong> ${berufsbildner.name}</p>
+          <p><strong>Filter:</strong> ${selectedLernender === 'all' ? 'Alle Lernenden' : lernende.find(l => l.id === selectedLernender)?.name}</p>
+          <p><strong>Anzahl Notizen:</strong> ${gefilterteNotizen.length}</p>
+          <p><strong>Erstellt:</strong> ${new Date().toLocaleDateString('de-CH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Notizen gesamt</div>
+            <div class="stat-value">${stats.total}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Dieser Monat</div>
+            <div class="stat-value">${stats.thisMonth}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Ø Länge</div>
+            <div class="stat-value">${stats.avgLength}</div>
+          </div>
+        </div>
+
+        <h2 style="font-size: 18px; margin: 30px 0 15px 0; color: #374151; border-bottom: 2px solid #E5E7EB; padding-bottom: 5px;">📊 Notizen pro Lernende/r</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Lernende/r</th>
+              <th>Anzahl Notizen</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${stats.perLernender.map(stat => `
+              <tr>
+                <td>${stat.name}</td>
+                <td>${stat.count}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <h2 style="font-size: 18px; margin: 30px 0 15px 0; color: #374151; border-bottom: 2px solid #E5E7EB; padding-bottom: 5px;">📝 Alle Notizen</h2>
+        ${gefilterteNotizen.map(n => `
+          <div class="notiz-card">
+            <div class="notiz-header">
+              <strong>${n.lernender?.name || 'Unbekannt'}</strong>
+              <span style="color: #6B7280;">${formatDate(n.datum)}</span>
+            </div>
+            <p style="color: #374151; line-height: 1.6; margin: 0;">${n.notizen}</p>
+            ${n.arbeiten && n.arbeiten.length > 0 ? `
+              <p style="color: #6B7280; font-size: 12px; margin-top: 10px;">
+                <strong>Arbeiten:</strong> ${n.arbeiten.map(a => a.arbeit).join(', ')}
+              </p>
+            ` : ''}
+          </div>
+        `).join('')}
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  };
+  
+  return (
+    <div className="max-w-6xl mx-auto p-4 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Notizen-Auswertung</h1>
+          <p className="text-gray-600">Alle Notizen deiner Lernenden</p>
+        </div>
+        {alleNotizen.length > 0 && (
+          <Button variant="secondary" size="small" onClick={handlePrint}>
+            🖨️ PDF
+          </Button>
+        )}
+      </div>
+      
+      {/* Statistiken */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <p className="text-gray-600 text-sm">Notizen gesamt</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">{stats.total}</p>
+        </Card>
+        <Card>
+          <p className="text-gray-600 text-sm">Dieser Monat</p>
+          <p className="text-3xl font-bold text-blue-400 mt-1">{stats.thisMonth}</p>
+        </Card>
+        <Card>
+          <p className="text-gray-600 text-sm">Ø Länge</p>
+          <p className="text-3xl font-bold text-emerald-400 mt-1">{stats.avgLength}</p>
+        </Card>
+        <Card>
+          <p className="text-gray-600 text-sm">Gefiltert</p>
+          <p className="text-3xl font-bold text-blue-400 mt-1">{gefilterteNotizen.length}</p>
+        </Card>
+      </div>
+      
+      {/* Filter */}
+      <Card>
+        <div className="grid md:grid-cols-2 gap-4">
+          <Select
+            label="Lernende/r"
+            value={selectedLernender}
+            onChange={(e) => setSelectedLernender(e.target.value)}
+            options={[
+              { value: 'all', label: 'Alle Lernenden' },
+              ...meineLernende.map(l => ({ value: l.id, label: l.name }))
+            ]}
+          />
+          <Input
+            label="Suche"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            placeholder="In Notizen suchen..."
+          />
+        </div>
+      </Card>
+      
+      {/* Notizen pro Lernende */}
+      {stats.perLernender.length > 0 && (
+        <Card>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Notizen pro Lernende/r</h2>
+          <div className="space-y-2">
+            {stats.perLernender.map(stat => (
+              <div key={stat.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span className="text-gray-900">{stat.name}</span>
+                <span className="text-blue-400 font-semibold">{stat.count} Notizen</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+      
+      {/* Notizen-Liste */}
+      <Card>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">📝 Alle Notizen ({gefilterteNotizen.length})</h2>
+        {gefilterteNotizen.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">Keine Notizen gefunden.</p>
+        ) : (
+          <div className="space-y-4">
+            {gefilterteNotizen.map(n => (
+              <div key={n.id} className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <p className="text-gray-900 font-medium">👷 {n.lernender?.name}</p>
+                    <p className="text-gray-600 text-sm">{formatDate(n.datum)}</p>
+                  </div>
+                  <span className="text-gray-500 text-xs">{n.notizen.length} Zeichen</span>
+                </div>
+                <p className="text-gray-800 whitespace-pre-wrap">{n.notizen}</p>
+                {n.arbeiten && n.arbeiten.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-gray-300">
+                    <p className="text-gray-600 text-sm"><strong>Arbeiten:</strong></p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {n.arbeiten.map((a, i) => (
+                        <span key={i} className="text-xs bg-blue-500/10 text-blue-400 px-2 py-1 rounded">
+                          {ARBEITSKATEGORIEN[a.kategorie]?.icon} {a.arbeit}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+};
+
 const BerufsbildnerBereich = ({ berufsbildner, lernende, rapporte, monatsBewertungen, onLogout, onRefresh }) => {
   const [currentView, setCurrentView] = useState('lernende');
   return (
@@ -2919,6 +3241,7 @@ const BerufsbildnerBereich = ({ berufsbildner, lernende, rapporte, monatsBewertu
       <BerufsbildnerNav currentView={currentView} onNavigate={setCurrentView} onLogout={onLogout} userName={berufsbildner.name} />
       {currentView === 'lernende' && <BerufsbildnerLernende berufsbildner={berufsbildner} lernende={lernende} rapporte={rapporte} onRefresh={onRefresh} />}
       {currentView === 'bewertungen' && <BerufsbildnerBewertungen berufsbildner={berufsbildner} lernende={lernende} rapporte={rapporte} monatsBewertungen={monatsBewertungen} onRefresh={onRefresh} />}
+      {currentView === 'notizen' && <BerufsbildnerNotizen berufsbildner={berufsbildner} lernende={lernende} rapporte={rapporte} />}
       {currentView === 'codes' && <BerufsbildnerCodes berufsbildner={berufsbildner} lernende={lernende} onRefresh={onRefresh} />}
       {currentView === 'uebersicht' && <BerufsbildnerUebersicht berufsbildner={berufsbildner} lernende={lernende} rapporte={rapporte} />}
     </div>
@@ -3001,23 +3324,35 @@ const AdminBereich = ({ berufsbildner, lernende, rapporte, onLogout, onRefresh }
     }
   };
   
-  const deleteLernender = async (id) => {
+  const deleteLernender = async (id, force = false) => {
     const lernendeRapporte = rapporte.filter(r => r.lernenderId === id);
-    if (lernendeRapporte.length > 0) {
-      alert(`⚠️ Lernende/r hat noch ${lernendeRapporte.length} Rapporte!\n\nBitte zuerst alle Rapporte löschen.`);
+    const lern = lernende.find(l => l.id === id);
+    
+    if (lernendeRapporte.length > 0 && !force) {
+      const forceDelete = window.confirm(
+        `⚠️ WARNUNG: "${lern?.name}" hat noch ${lernendeRapporte.length} Rapporte!\n\n` +
+        `Diese müssen normalerweise zuerst gelöscht werden.\n\n` +
+        `Trotzdem JETZT löschen? (Rapporte bleiben erhalten, aber sind verwaist)`
+      );
+      
+      if (forceDelete) {
+        return deleteLernender(id, true); // Rekursiv mit force=true
+      }
       return;
     }
     
-    const lern = lernende.find(l => l.id === id);
     if (!window.confirm(`Wirklich "${lern?.name}" löschen?`)) return;
     
     setDeletingLern(id);
     try {
       await deleteDoc(doc(db, 'lernende', id));
       onRefresh?.();
+      if (lernendeRapporte.length > 0) {
+        alert(`⚠️ Lernende/r gelöscht.\n\n${lernendeRapporte.length} Rapporte sind jetzt verwaist und sollten manuell gelöscht werden.`);
+      }
     } catch (err) {
       console.error(err);
-      alert('Fehler beim Löschen');
+      alert('Fehler beim Löschen: ' + err.message);
     } finally {
       setDeletingLern(null);
     }
