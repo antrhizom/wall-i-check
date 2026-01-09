@@ -2459,8 +2459,12 @@ const BerufsbildnerLernende = ({ berufsbildner, lernende, rapporte, onRefresh })
                     deleteLernender(l.id);
                   }}
                   disabled={deletingLernender || lernRapporte.length > 0}
-                  className="absolute top-2 right-2 p-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                  title={lernRapporte.length > 0 ? `Hat noch ${lernRapporte.length} Rapporte` : 'Lernende/n löschen'}
+                  className={`absolute top-2 right-2 p-2 rounded-lg transition-all ${
+                    lernRapporte.length > 0 
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                      : 'bg-red-500/10 hover:bg-red-500/20 text-red-600 hover:text-red-700'
+                  }`}
+                  title={lernRapporte.length > 0 ? `Hat noch ${lernRapporte.length} Rapporte - erst Rapporte löschen` : 'Lernende/n löschen'}
                 >
                   🗑️
                 </button>
@@ -2719,12 +2723,13 @@ const BerufsbildnerBewertungen = ({ berufsbildner, lernende, rapporte, monatsBew
   );
 };
 
-const BerufsbildnerCodes = ({ berufsbildner, lernende, onRefresh }) => {
+const BerufsbildnerCodes = ({ berufsbildner, lernende, rapporte, onRefresh }) => {
   const [newCode, setNewCode] = useState('');
   const [saving, setSaving] = useState(false);
   const [activatingCode, setActivatingCode] = useState(null);
   const [lernenderName, setLernenderName] = useState('');
   const [lehrjahr, setLehrjahr] = useState(1);
+  const [deletingLernender, setDeletingLernender] = useState(false);
   
   const createCode = async () => {
     setSaving(true);
@@ -2740,6 +2745,29 @@ const BerufsbildnerCodes = ({ berufsbildner, lernende, onRefresh }) => {
     if (lernende.some(l => l.code === code)) { alert('Code wird verwendet!'); return; }
     try { await updateDoc(doc(db, 'berufsbildner', berufsbildner.id), { codes: (berufsbildner.codes || []).filter(c => c !== code) }); onRefresh?.(); }
     catch (err) { console.error(err); }
+  };
+  
+  const deleteLernender = async (lernenderId) => {
+    const lernendeRapporte = rapporte.filter(r => r.lernenderId === lernenderId);
+    const lern = lernende.find(l => l.id === lernenderId);
+    
+    if (lernendeRapporte.length > 0) {
+      alert(`⚠️ "${lern?.name}" hat noch ${lernendeRapporte.length} Rapporte!\n\nBitte zuerst alle Rapporte einzeln löschen.`);
+      return;
+    }
+    
+    if (!window.confirm(`Wirklich "${lern?.name}" dauerhaft löschen?\n\nDieser Lernende wird aus dem System entfernt.`)) return;
+    
+    setDeletingLernender(true);
+    try {
+      await deleteDoc(doc(db, 'lernende', lernenderId));
+      onRefresh?.();
+    } catch (err) {
+      console.error(err);
+      alert('Fehler beim Löschen: ' + err.message);
+    } finally {
+      setDeletingLernender(false);
+    }
   };
   
   const activateCode = async () => {
@@ -2780,7 +2808,7 @@ const BerufsbildnerCodes = ({ berufsbildner, lernende, onRefresh }) => {
             const l = lernende.find(x => x.code === code);
             return (
               <div key={code} className="flex items-center justify-between p-3 bg-gray-100/30 rounded-xl">
-                <div>
+                <div className="flex-1">
                   <span className="font-mono text-lg text-gray-900">{code}</span>
                   {l ? (
                     <span className="ml-3 text-gray-600 text-sm">→ {l.name} ({l.lehrjahr}. Lehrjahr)</span>
@@ -2789,7 +2817,17 @@ const BerufsbildnerCodes = ({ berufsbildner, lernende, onRefresh }) => {
                   )}
                 </div>
                 {l ? (
-                  <span className="text-emerald-400 text-sm">✓ Aktiv</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400 text-sm">✓ Aktiv</span>
+                    <Button 
+                      variant="danger" 
+                      size="small" 
+                      onClick={() => deleteLernender(l.id)}
+                      disabled={deletingLernender}
+                    >
+                      {deletingLernender ? '...' : '🗑️'}
+                    </Button>
+                  </div>
                 ) : (
                   <div className="flex gap-2">
                     <Button variant="primary" size="small" onClick={() => setActivatingCode(code)}>Aktivieren</Button>
@@ -3257,7 +3295,7 @@ const BerufsbildnerBereich = ({ berufsbildner, lernende, rapporte, monatsBewertu
       {currentView === 'lernende' && <BerufsbildnerLernende berufsbildner={berufsbildner} lernende={lernende} rapporte={rapporte} onRefresh={onRefresh} />}
       {currentView === 'bewertungen' && <BerufsbildnerBewertungen berufsbildner={berufsbildner} lernende={lernende} rapporte={rapporte} monatsBewertungen={monatsBewertungen} onRefresh={onRefresh} />}
       {currentView === 'notizen' && <BerufsbildnerNotizen berufsbildner={berufsbildner} lernende={lernende} rapporte={rapporte} />}
-      {currentView === 'codes' && <BerufsbildnerCodes berufsbildner={berufsbildner} lernende={lernende} onRefresh={onRefresh} />}
+      {currentView === 'codes' && <BerufsbildnerCodes berufsbildner={berufsbildner} lernende={lernende} rapporte={rapporte} onRefresh={onRefresh} />}
       {currentView === 'uebersicht' && <BerufsbildnerUebersicht berufsbildner={berufsbildner} lernende={lernende} rapporte={rapporte} />}
     </div>
   );
